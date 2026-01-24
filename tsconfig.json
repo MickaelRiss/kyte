@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "module": "es6",
+        "target": "esnext",
+        "module": "nodenext",
         "strict": true,
+        "moduleResolution": "NodeNext",
+        "skipLibCheck": true,
         "types": ["node"]
     }
 }
