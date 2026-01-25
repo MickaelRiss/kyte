@@ -7,29 +7,31 @@ import { AESEncryption } from "../src/core/encryption.js";
 // Créer les tests
 const prompt = PromptSync();
 let end = false;
-while (end === false) {
-    console.log("If you want to encrypt press: 1. If you want to decrypt press: 2.");
-    let answer = prompt("Choice: ");
-    const passphrase = prompt("Please enter your password: ");
-    if (String(answer) === "1") {
-        const seed = prompt("Please enter your seedphrase: ");
-        const encrypt = AESEncryption.encrypt(seed, passphrase);
-        console.log("Please save your encryption careful or you won't be able to decrypt later: ", encrypt);
-        end = true;
-    }
-    else if (String(answer) === "2") {
-        const cipherText = prompt("Please enter you cipher text: ");
-        const iv = prompt("Please enter you iv: ");
-        const salt = prompt("Please enter you salt: ");
-        const tag = prompt("Please enter you tag: ");
-        const encrypt = {
-            cipherText,
-            iv,
-            salt,
-            tag
-        };
-        const decrypt = AESEncryption.decrypt(encrypt, passphrase);
-        console.log(decrypt);
-        end = true;
-    }
+console.log("Welcome to SeedGuard! 🛡️\nPress 1 if you want to encrypt.\nPress 2 if you want to decrypt.");
+let answer = Number(prompt("Choice: "));
+while (answer !== 1 && answer !== 2) {
+    console.log("Please, Press 1 if you want to encrypt.\nPress 2 if you want to decrypt.");
+    answer = Number(prompt("Choice: "));
+}
+const passphrase = prompt("Please enter your passphrase: ");
+if (answer === 1) {
+    const seed = prompt("Please enter your seedphrase: ");
+    const encrypt = AESEncryption.encrypt(seed, passphrase);
+    console.log("Please save your encryption carefully or you won't be able to decrypt later: ", encrypt);
+    end = true;
+}
+else if (answer === 2) {
+    const cipherText = prompt("Please enter you cipher text: ");
+    const iv = prompt("Please enter you iv: ");
+    const salt = prompt("Please enter you salt: ");
+    const tag = prompt("Please enter you tag: ");
+    const encrypt = {
+        cipherText,
+        iv,
+        salt,
+        tag
+    };
+    const decrypt = AESEncryption.decrypt(encrypt, passphrase);
+    console.log(decrypt);
+    end = true;
 }
