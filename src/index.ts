@@ -1,13 +1,8 @@
 import PromptSync from "prompt-sync";
 import { EncryptedSeed, AESEncryption } from "../src/core/encryption.js"
 
-// 1. Mettre en place le chiffrement AES avec un password ✅
 // 2. Stringify le chiffrement AES
 // 3. Implementer le Shamir Split pour 3 fragments et en jeter 1
-
-
-// Objectif : 
-// Créer les tests
 
 const prompt = PromptSync();
 
