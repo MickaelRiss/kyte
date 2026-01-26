@@ -5,6 +5,6 @@
         "strict": true,
         "moduleResolution": "NodeNext",
         "skipLibCheck": true,
-        "types": ["node"]
+        "types": ["node", "vitest/globals"]
     }
 }

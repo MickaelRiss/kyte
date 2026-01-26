@@ -1,12 +1,8 @@
 import PromptSync from "prompt-sync";
 import { AESEncryption } from "../src/core/encryption.js";
-// 1. Mettre en place le chiffrement AES avec un password ✅
 // 2. Stringify le chiffrement AES
 // 3. Implementer le Shamir Split pour 3 fragments et en jeter 1
-// Objectif : 
-// Créer les tests
 const prompt = PromptSync();
-let end = false;
 console.log("Welcome to SeedGuard! 🛡️\nPress 1 if you want to encrypt.\nPress 2 if you want to decrypt.");
 let answer = Number(prompt("Choice: "));
 while (answer !== 1 && answer !== 2) {
@@ -18,7 +14,6 @@ if (answer === 1) {
     const seed = prompt("Please enter your seedphrase: ");
     const encrypt = AESEncryption.encrypt(seed, passphrase);
     console.log("Please save your encryption carefully or you won't be able to decrypt later: ", encrypt);
-    end = true;
 }
 else if (answer === 2) {
     const cipherText = prompt("Please enter you cipher text: ");
@@ -33,5 +28,4 @@ else if (answer === 2) {
     };
     const decrypt = AESEncryption.decrypt(encrypt, passphrase);
     console.log(decrypt);
-    end = true;
 }

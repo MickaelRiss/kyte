@@ -24,7 +24,7 @@ export class AESEncryption {
         )
     }
 
-    static encrypt(seed: string, passphrase: string) {
+    static encrypt(seed: string, passphrase: string): EncryptedSeed {
         const salt: Buffer = crypto.randomBytes(this.SALT_LENGTH);
         const iv: Buffer = crypto.randomBytes(this.IV_LENGTH);
         
@@ -49,7 +49,7 @@ export class AESEncryption {
         }
     }
 
-    static decrypt(encrypted: EncryptedSeed, passphrase: string) {
+    static decrypt(encrypted: EncryptedSeed, passphrase: string): string {
         try {
             const cipherText: string = encrypted.cipherText;
             const iv: Buffer = Buffer.from(encrypted.iv, "hex");
