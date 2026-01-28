@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "bip39": "^3.1.0",
-    "prompt-sync": "^4.2.0"
+    "prompt-sync": "^4.2.0",
+    "shamir-secret-sharing": "^0.0.4"
   }
 }
