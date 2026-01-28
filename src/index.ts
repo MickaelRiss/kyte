@@ -21,13 +21,12 @@ if (answer === 1) {
     const seed: string = prompt("Enter your seed phrase: ");
     try {
         console.log("\n🔐 Encrypting your seed phrase...");
-        const encrypt = await SeedManager.secureSeed({ seed, passphrase });
-        const resultJson = JSON.stringify(encrypt);
+        const encryption = await SeedManager.secureSeed({ seed, passphrase });
         console.log("\n✅ Encryption successful!\n");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         console.log("⚠️  IMPORTANT: Save this encrypted data securely");
         console.log("📋 COPY THE LINE BELOW (triple-click to select)");
-        console.log(resultJson);
+        console.log(encryption);
         console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
     } catch (error) {
@@ -39,28 +38,29 @@ if (answer === 1) {
         process.exit(1);
     }   
 
-} else if (answer === 2) {
-    console.log("\n🔓 DECRYPTION MODE");
-    const encryptJson: string = prompt("Paste your encrypted JSON: ");
-    const encryptedResult = JSON.parse(encryptJson);
-    try {
-        console.log("\n🔐 Decrypting your seed phrase...");
-        const recoveredSeed = await SeedManager.recoverSeed(encryptedResult, passphrase);
+} 
+// else if (answer === 2) {
+//     console.log("\n🔓 DECRYPTION MODE");
+//     const encryptJson: string = prompt("Paste your encrypted JSON: ");
+//     const encrypt = JSON.parse(encryptJson);
+//     try {
+//         console.log("\n🔐 Decrypting your seed phrase...");
+//         const recoveredSeed = await SeedManager.recoverSeed(encrypt, passphrase);
         
-        console.log("\n✅ Decryption successful!\n");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("🔑 YOUR SEED PHRASE (keep it secret!)");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        console.log(recoveredSeed);
-        console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("⚠️  Never share your seed phrase with anyone!");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+//         console.log("\n✅ Decryption successful!\n");
+//         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+//         console.log("🔑 YOUR SEED PHRASE (keep it secret!)");
+//         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+//         console.log(recoveredSeed);
+//         console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+//         console.log("⚠️  Never share your seed phrase with anyone!");
+//         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     
-    } catch (parseError) {
-        console.error("❌ Invalid JSON format. Please check your encrypted data.");
-        process.exit(1);
-    }
-}
+//     } catch (parseError) {
+//         console.error("❌ Invalid JSON format. Please check your encrypted data.");
+//         process.exit(1);
+//     }
+// }
 
 console.log("✅ Operation completed successfully!\n");
 process.exit(0);

@@ -9,38 +9,13 @@ export class SeedManager {
         if (!finalSeed)
             throw new Error("Your seed isn't following bip39 convention, please contact your platform.");
         // Encrypt
-        const encryptionResult = AESEncryption.encrypt(seedNormalize, passphrase);
+        const encrypted = AESEncryption.encrypt(seedNormalize, passphrase);
         // JSON Stringify 
-        const encryptedJson = JSON.stringify(encryptionResult);
+        const encryptedJson = JSON.stringify(encrypted);
         // Split Shamir
         const shamirResult = await ShamirSecret.split(encryptedJson);
-        // New encrypton for Frag3
-        const fragmentC = AESEncryption.encrypt(shamirResult.fragments[2], passphrase);
-        return {
-            fragmentB: shamirResult.fragments[1],
-            fragmentC,
-            metadata: {
-                threshold: shamirResult.threshold,
-                total: shamirResult.total,
-                created: new Date()
-            }
-        };
-    }
-    static async recoverSeed(encrypted, passphrase) {
-        // Get Fragment B
-        const fragmentB = encrypted.fragmentB;
-        // Get and decrypt Fragment C
-        const fragmentCEncrypted = encrypted.fragmentC;
-        const fragmentC = AESEncryption.decrypt(fragmentCEncrypted, passphrase);
-        // Combine 2 fragments to get the secret value
-        const encryptedJson = await ShamirSecret.combine([fragmentB, fragmentC]);
-        // Combine => return string
-        const encryptedData = JSON.parse(encryptedJson);
-        const seed = AESEncryption.decrypt(encryptedData, passphrase);
-        const normalizedSeed = SeedValidator.normalizeSeed(seed);
-        if (!SeedValidator.validateSeed(normalizedSeed)) {
-            throw new Error('❌ Critical Error : Seed invalid !');
-        }
-        return normalizedSeed;
+        // Create JSON stringify object for each frag
+        const [fragmentA, fragmentB, fragmentC] = shamirResult.fragments.map((fragment, index) => (JSON.stringify({ i: index + 1, data: fragment })));
+        return [fragmentA, fragmentB, fragmentC];
     }
 }
