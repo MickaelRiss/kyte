@@ -18,4 +18,22 @@ export class SeedManager {
         const [fragmentA, fragmentB, fragmentC] = shamirResult.fragments.map((fragment, index) => (JSON.stringify({ i: index + 1, data: fragment })));
         return [fragmentA, fragmentB, fragmentC];
     }
+    static async recoverSeed(fragments, passphrase) {
+        // Extract hex data from fragment JSON strings
+        const fragmentsHex = fragments.map((fragment) => {
+            const parsed = JSON.parse(fragment);
+            return parsed.data;
+        });
+        // Shamir combine to recover the encrypted seed JSON
+        const encryptedJson = await ShamirSecret.combine(fragmentsHex);
+        // AES decrypt to recover the seed
+        const encryptedData = JSON.parse(encryptedJson);
+        const seed = AESEncryption.decrypt(encryptedData, passphrase);
+        // Validate recovered seed
+        const normalizedSeed = SeedValidator.normalizeSeed(seed);
+        if (!SeedValidator.validateSeed(normalizedSeed)) {
+            throw new Error("Recovered seed is not a valid BIP39 mnemonic.");
+        }
+        return normalizedSeed;
+    }
 }

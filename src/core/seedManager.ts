@@ -27,26 +27,26 @@ export class SeedManager {
         return [fragmentA, fragmentB, fragmentC]
     }
 
-    // static async recoverSeed(encrypted: EncryptedResult, passphrase: string): Promise<string> {
-    //     // Get Fragment B
-    //     const fragmentB: string = encrypted.fragmentB;
-        
-    //     // Get and decrypt Fragment C
-    //     const fragmentCEncrypted: EncryptedSeed = encrypted.fragmentC;
-    //     const fragmentC = AESEncryption.decrypt(fragmentCEncrypted, passphrase);
+    static async recoverSeed(fragments: string[], passphrase: string): Promise<string> {
+        // Extract hex data from fragment JSON strings
+        const fragmentsHex = fragments.map((fragment) => {
+            const parsed = JSON.parse(fragment);
+            return parsed.data as string;
+        });
 
-    //     // Combine 2 fragments to get the secret value
-    //     const encryptedJson = await ShamirSecret.combine([fragmentB, fragmentC]);
-        
-    //     // Combine => return string
-    //     const encryptedData: EncryptedSeed = JSON.parse(encryptedJson);
-    //     const seed: string = AESEncryption.decrypt(encryptedData, passphrase);
-    //     const normalizedSeed = SeedValidator.normalizeSeed(seed);
-        
-    //     if (!SeedValidator.validateSeed(normalizedSeed)) {
-    //         throw new Error('❌ Critical Error : Seed invalid !');
-    //     }
-        
-    //     return normalizedSeed;
-    // }
+        // Shamir combine to recover the encrypted seed JSON
+        const encryptedJson = await ShamirSecret.combine(fragmentsHex);
+
+        // AES decrypt to recover the seed
+        const encryptedData: EncryptedSeed = JSON.parse(encryptedJson);
+        const seed = AESEncryption.decrypt(encryptedData, passphrase);
+
+        // Validate recovered seed
+        const normalizedSeed = SeedValidator.normalizeSeed(seed);
+        if (!SeedValidator.validateSeed(normalizedSeed)) {
+            throw new Error("Recovered seed is not a valid BIP39 mnemonic.");
+        }
+
+        return normalizedSeed;
+    }
 }

@@ -1,5 +1,8 @@
 import PromptSync from "prompt-sync";
+import fs from "fs";
 import { SeedManager } from "./core/seedManager.js";
+import { generateQR } from "./utils/qrcode.js";
+import { buildPDF } from "./utils/pdf.js";
 const prompt = PromptSync();
 console.log("🛡️  Welcome to SeedGuard - Secure Seed Phrase Manager\n");
 console.log("Please select an option:");
@@ -19,11 +22,24 @@ if (answer === 1) {
         console.log("\n🔐 Encrypting your seed phrase...");
         const encryption = await SeedManager.secureSeed({ seed, passphrase });
         console.log("\n✅ Encryption successful!\n");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("⚠️  IMPORTANT: Save this encrypted data securely");
-        console.log("📋 COPY THE LINE BELOW (triple-click to select)");
-        console.log(encryption);
-        console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        const [fragmentA, fragmentB, fragmentC] = encryption;
+        // Fragment A to QR code + PDF + JSON
+        const qrA = await generateQR(fragmentA);
+        const pathA = await buildPDF(qrA, "./seedguard_fragmentA.pdf", "Fragment A");
+        fs.writeFileSync("./seedguard_fragmentA.json", fragmentA);
+        console.log(`📄 Fragment A saved to ${pathA}`);
+        console.log(`📄 Fragment A data saved to ./seedguard_fragmentA.json`);
+        // Fragment B to QR code + PDF + JSON
+        const qrB = await generateQR(fragmentB);
+        const pathB = await buildPDF(qrB, "./seedguard_fragmentB.pdf", "Fragment B");
+        fs.writeFileSync("./seedguard_fragmentB.json", fragmentB);
+        console.log(`📄 Fragment B saved to ${pathB}`);
+        console.log(`📄 Fragment B data saved to ./seedguard_fragmentB.json`);
+        // Fragment C (to be uploaded to smart contract)
+        console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.log("📋 Fragment C (for smart contract upload):");
+        console.log(fragmentC);
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     }
     catch (error) {
         if (error instanceof Error) {
@@ -35,25 +51,33 @@ if (answer === 1) {
         process.exit(1);
     }
 }
-// else if (answer === 2) {
-//     console.log("\n🔓 DECRYPTION MODE");
-//     const encryptJson: string = prompt("Paste your encrypted JSON: ");
-//     const encrypt = JSON.parse(encryptJson);
-//     try {
-//         console.log("\n🔐 Decrypting your seed phrase...");
-//         const recoveredSeed = await SeedManager.recoverSeed(encrypt, passphrase);
-//         console.log("\n✅ Decryption successful!\n");
-//         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-//         console.log("🔑 YOUR SEED PHRASE (keep it secret!)");
-//         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-//         console.log(recoveredSeed);
-//         console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-//         console.log("⚠️  Never share your seed phrase with anyone!");
-//         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-//     } catch (parseError) {
-//         console.error("❌ Invalid JSON format. Please check your encrypted data.");
-//         process.exit(1);
-//     }
-// }
+else if (answer === 2) {
+    console.log("\n🔓 DECRYPTION MODE");
+    console.log("You need 2 fragment files to recover your seed.\n");
+    const path1 = prompt("Enter path to first fragment file: ");
+    const path2 = prompt("Enter path to second fragment file: ");
+    try {
+        const fragment1 = fs.readFileSync(path1, "utf-8");
+        const fragment2 = fs.readFileSync(path2, "utf-8");
+        console.log("\n🔐 Recovering your seed phrase...");
+        const recoveredSeed = await SeedManager.recoverSeed([fragment1, fragment2], passphrase);
+        console.log("\n✅ Recovery successful!\n");
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.log("🔑 YOUR SEED PHRASE (keep it secret!)");
+        console.log(recoveredSeed);
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.log("⚠️  Never share your seed phrase with anyone!");
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            console.error("❌ Error:", error.message);
+        }
+        else {
+            console.error("❌ An unexpected error occurred");
+        }
+        process.exit(1);
+    }
+}
 console.log("✅ Operation completed successfully!\n");
 process.exit(0);
