@@ -15,6 +15,9 @@ This means you can distribute fragments across different locations and people. L
 
 ## How it works
 
+<img width="829" height="635" alt="Screenshot 2026-01-30 at 11 17 15 AM" src="https://github.com/user-attachments/assets/52861833-4834-4aff-bef9-d1950244213a" />
+<img width="553" height="599" alt="Screenshot 2026-01-30 at 11 17 38 AM" src="https://github.com/user-attachments/assets/658b8b07-a59c-4b40-befa-db26501aa52d" />
+
 ```
 Seed phrase + Passphrase
         │
