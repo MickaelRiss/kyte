@@ -15,7 +15,7 @@ This means you can distribute fragments across different locations and people. L
 
 ## How it works
 
-<img width="829" height="635" alt="Screenshot 2026-01-30 at 11 17 15 AM" src="https://github.com/user-attachments/assets/52861833-4834-4aff-bef9-d1950244213a" />
+<img width="906" height="708" alt="Screenshot 2026-01-30 at 11 41 38 AM" src="https://github.com/user-attachments/assets/f51b2cd5-e01e-4c83-9735-87cd0102924a" />
 <img width="553" height="599" alt="Screenshot 2026-01-30 at 11 17 38 AM" src="https://github.com/user-attachments/assets/658b8b07-a59c-4b40-befa-db26501aa52d" />
 
 ```
@@ -59,7 +59,7 @@ Smart contracts create an immutable public record. Once Fragment C is deployed o
 - Privacy concerns: Your crypto activity becomes permanently traceable on a public ledger
 - Gas fees
   
-<img width="781" height="659" alt="Screenshot 2026-01-30 at 11 22 27 AM" src="https://github.com/user-attachments/assets/96495710-c9cf-4083-add1-96ba29ed37bf" />
+<img width="804" height="664" alt="Screenshot 2026-01-30 at 11 42 06 AM" src="https://github.com/user-attachments/assets/6ad7011a-3c78-4c96-b3aa-624aaecf444b" />
 
 ## Security details
 
