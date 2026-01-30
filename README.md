@@ -51,6 +51,16 @@ To recover your seed, you need **any 2 of the 3 fragments** plus your **passphra
 - Fragment A + Fragment C + passphrase
 - Fragment B + Fragment C + passphrase
 
+### Why Cloud Storage Over Smart Contracts for Aegis ?
+After careful consideration, I've decided to implement cloud storage instead of smart contract storage for Fragment C in Aegis. Here's why:
+Smart contracts create an immutable public record. Once Fragment C is deployed on-chain, it exists forever—visible to anyone, anywhere, at any time. Even though the fragment is encrypted, this permanent visibility presents several concerns:
+- Future cryptographic vulnerabilities: Today's encryption may be breakable tomorrow (quantum computing, new attack vectors)
+- Eternal exposure: Unlike cloud storage, blockchain data cannot be deleted or updated
+- Privacy concerns: Your crypto activity becomes permanently traceable on a public ledger
+- Gas fees
+  
+<img width="781" height="659" alt="Screenshot 2026-01-30 at 11 22 27 AM" src="https://github.com/user-attachments/assets/96495710-c9cf-4083-add1-96ba29ed37bf" />
+
 ## Security details
 
 ### Encryption
