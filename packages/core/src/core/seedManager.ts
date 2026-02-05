@@ -4,7 +4,7 @@ import { ShamirSecret } from "./shamir.js";
 
 export interface UserInformations {
     seed: string;
-    passphrase: string;
+    passphrase?: string; // Optional: undefined = Community (Shamir-only), string = Pro (double encryption)
 }
 
 export class SeedManager {
@@ -13,13 +13,23 @@ export class SeedManager {
         const seedNormalize = SeedValidator.normalizeSeed(seed);
         const finalSeed = SeedValidator.validateSeed(seedNormalize);
         if (!finalSeed) throw new Error("Your seed isn't following bip39 convention, please contact your platform.");
-        // Encrypt
-        const encrypted: EncryptedSeed = AESEncryption.encrypt(seedNormalize, passphrase);
-        // JSON Stringify 
-        const encryptedJson = JSON.stringify(encrypted);
-        // Split Shamir
-        const shamirResult = await ShamirSecret.split(encryptedJson);
-        // Create JSON stringify object for each frag
+
+        // Determine what to split based on license tier
+        let dataToSplit: string;
+
+        if (passphrase) {
+            // Pro version: double encryption (AES + Shamir)
+            const encrypted: EncryptedSeed = AESEncryption.encrypt(seedNormalize, passphrase);
+            dataToSplit = JSON.stringify(encrypted);
+        } else {
+            // Community version: Shamir-only (no passphrase encryption)
+            dataToSplit = seedNormalize;
+        }
+
+        // Split with Shamir
+        const shamirResult = await ShamirSecret.split(dataToSplit);
+
+        // Create JSON stringify object for each fragment
         const [fragmentA, fragmentB, fragmentC] = shamirResult.fragments.map((fragment, index) => (
             JSON.stringify({ i: index + 1, data: fragment })
         ));
@@ -27,19 +37,27 @@ export class SeedManager {
         return [fragmentA, fragmentB, fragmentC]
     }
 
-    static async recoverSeed(fragments: string[], passphrase: string): Promise<string> {
+    static async recoverSeed(fragments: string[], passphrase?: string): Promise<string> {
         // Extract hex data from fragment JSON strings
         const fragmentsHex = fragments.map((fragment) => {
             const parsed = JSON.parse(fragment);
             return parsed.data as string;
         });
 
-        // Shamir combine to recover the encrypted seed JSON
-        const encryptedJson = await ShamirSecret.combine(fragmentsHex);
+        // Shamir combine to recover the data
+        const combinedData = await ShamirSecret.combine(fragmentsHex);
 
-        // AES decrypt to recover the seed
-        const encryptedData: EncryptedSeed = JSON.parse(encryptedJson);
-        const seed = AESEncryption.decrypt(encryptedData, passphrase);
+        // Determine if we need to decrypt based on license tier
+        let seed: string;
+
+        if (passphrase) {
+            // Pro version: decrypt the AES-encrypted data
+            const encryptedData: EncryptedSeed = JSON.parse(combinedData);
+            seed = AESEncryption.decrypt(encryptedData, passphrase);
+        } else {
+            // Community version: combined data is the raw seed
+            seed = combinedData;
+        }
 
         // Validate recovered seed
         const normalizedSeed = SeedValidator.normalizeSeed(seed);

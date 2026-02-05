@@ -8,10 +8,10 @@ export interface EncryptResult {
 }
 
 const kyteAPI = {
-  encrypt: (seed: string, passphrase: string): Promise<EncryptResult> =>
+  encrypt: (seed: string, passphrase?: string): Promise<EncryptResult> =>
     ipcRenderer.invoke("seed:encrypt", seed, passphrase),
 
-  decrypt: (fragments: string[], passphrase: string): Promise<string> =>
+  decrypt: (fragments: string[], passphrase?: string): Promise<string> =>
     ipcRenderer.invoke("seed:decrypt", fragments, passphrase),
 };
 

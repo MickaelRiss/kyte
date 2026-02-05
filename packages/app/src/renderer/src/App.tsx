@@ -22,7 +22,14 @@ const stagger = {
 
 function ShieldIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
@@ -30,7 +37,14 @@ function ShieldIcon(): React.JSX.Element {
 
 function LockIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
@@ -39,7 +53,14 @@ function LockIcon(): React.JSX.Element {
 
 function UnlockIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
       <path d="M7 11V7a5 5 0 0 1 9.9-1" />
     </svg>
@@ -48,7 +69,14 @@ function UnlockIcon(): React.JSX.Element {
 
 function ArrowLeftIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M19 12H5" />
       <path d="M12 19l-7-7 7-7" />
     </svg>
@@ -57,7 +85,14 @@ function ArrowLeftIcon(): React.JSX.Element {
 
 function CopyIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </svg>
@@ -66,7 +101,14 @@ function CopyIcon(): React.JSX.Element {
 
 function CheckIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -74,7 +116,14 @@ function CheckIcon(): React.JSX.Element {
 
 function EyeIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -83,7 +132,14 @@ function EyeIcon(): React.JSX.Element {
 
 function EyeOffIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
       <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
       <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
@@ -94,7 +150,14 @@ function EyeOffIcon(): React.JSX.Element {
 
 function DownloadIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
@@ -144,15 +207,17 @@ const FRAGMENT_META = [
 function App(): React.JSX.Element {
   const [mode, setMode] = useState<"encrypt" | "decrypt" | null>(null);
   const [seed, setSeed] = useState("");
-  const [passphrase, setPassphrase] = useState("");
   const [fragments, setFragments] = useState(["", ""]);
-  const [encryptResult, setEncryptResult] = useState<EncryptResult | null>(null);
+  const [encryptResult, setEncryptResult] = useState<EncryptResult | null>(
+    null,
+  );
   const [decryptResult, setDecryptResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
-  const [confirmPassphrase, setConfirmPassphrase] = useState("");
-  const [showPassphrase, setShowPassphrase] = useState(false);
+  // const [passphrase, setPassphrase] = useState("");
+  // const [confirmPassphrase, setConfirmPassphrase] = useState("");
+  // const [showPassphrase, setShowPassphrase] = useState(false);
 
   const copyToClipboard = async (text: string, tag: string): Promise<void> => {
     await navigator.clipboard.writeText(text);
@@ -168,9 +233,9 @@ function App(): React.JSX.Element {
   const reset = (): void => {
     setMode(null);
     setSeed("");
-    setPassphrase("");
-    setConfirmPassphrase("");
-    setShowPassphrase(false);
+    // setPassphrase("");
+    // setConfirmPassphrase("");
+    // setShowPassphrase(false);
     setFragments(["", ""]);
     setEncryptResult(null);
     setDecryptResult(null);
@@ -181,7 +246,7 @@ function App(): React.JSX.Element {
     setError(null);
     setLoading(true);
     try {
-      const result = await window.kyte.encrypt(seed, passphrase);
+      const result = await window.kyte.encrypt(seed); // Community: no passphrase
       setEncryptResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Encryption failed");
@@ -195,8 +260,7 @@ function App(): React.JSX.Element {
     setLoading(true);
     try {
       const recovered = await window.kyte.decrypt(
-        fragments.filter((f) => f.trim() !== ""),
-        passphrase,
+        fragments.filter((f) => f.trim() !== ""), // Community: no passphrase
       );
       setDecryptResult(recovered);
     } catch (err) {
@@ -214,14 +278,14 @@ function App(): React.JSX.Element {
     });
   };
 
-  const canSubmitEncrypt =
-    seed.trim() !== "" && passphrase.trim() !== "" && passphrase === confirmPassphrase;
-  const canSubmitDecrypt =
-    fragments.filter((f) => f.trim() !== "").length >= 2 && passphrase.trim() !== "";
+  // const canSubmitEncrypt = seed.trim() !== "" && passphrase.trim() !== "" && passphrase === confirmPassphrase;
+  // const canSubmitDecrypt = fragments.filter((f) => f.trim() !== "").length >= 2 && passphrase.trim() !== "";
+  const canSubmitEncrypt = seed.trim() !== "";
+  const canSubmitDecrypt = fragments.filter((f) => f.trim() !== "").length >= 2;
 
   return (
     <div className="app-shell">
-      {/* ── Titlebar ── */}
+      {/* Titlebar */}
       <div className="titlebar">
         <div className="titlebar-brand">
           <div className="titlebar-logo" />
@@ -233,11 +297,11 @@ function App(): React.JSX.Element {
         </div>
       </div>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div className="app-content">
         <div className="content-container">
           <AnimatePresence mode="wait">
-            {/* ── Landing ── */}
+            {/* Landing */}
             {!mode && (
               <motion.div className="landing" key="landing" {...fadeIn}>
                 <motion.div
@@ -251,10 +315,15 @@ function App(): React.JSX.Element {
 
                 <h1>Kyte</h1>
                 <p className="landing-subtitle">
-                  Secure seed phrase management with Shamir secret sharing
+                  Seed phrase protection with Shamir secret sharing
                 </p>
 
-                <motion.div className="mode-cards" variants={stagger} initial="initial" animate="animate">
+                <motion.div
+                  className="mode-cards"
+                  variants={stagger}
+                  initial="initial"
+                  animate="animate"
+                >
                   <motion.div
                     className="mode-card"
                     variants={fadeIn}
@@ -265,9 +334,9 @@ function App(): React.JSX.Element {
                     <div className="mode-card-icon">
                       <LockIcon />
                     </div>
-                    <div className="mode-card-title">Encrypt</div>
+                    <div className="mode-card-title">Secure</div>
                     <div className="mode-card-desc">
-                      Split your seed phrase into 3 secure fragments
+                      Split your seed phrase into 3 fragments
                     </div>
                   </motion.div>
 
@@ -281,16 +350,16 @@ function App(): React.JSX.Element {
                     <div className="mode-card-icon">
                       <UnlockIcon />
                     </div>
-                    <div className="mode-card-title">Decrypt</div>
+                    <div className="mode-card-title">Recover</div>
                     <div className="mode-card-desc">
-                      Recover your seed from any 2 fragments
+                      Restore your seed from any 2 fragments
                     </div>
                   </motion.div>
                 </motion.div>
               </motion.div>
             )}
 
-            {/* ── Encrypt Form ── */}
+            {/* Encrypt Form */}
             {mode === "encrypt" && (
               <motion.div className="form-panel" key="encrypt" {...fadeIn}>
                 <div className="form-header">
@@ -298,8 +367,10 @@ function App(): React.JSX.Element {
                     <ArrowLeftIcon />
                   </button>
                   <div className="form-header-text">
-                    <h2>Encrypt Seed Phrase</h2>
-                    <p>AES-256-GCM encryption with 2-of-3 Shamir splitting</p>
+                    <h2>Secure Seed Phrase</h2>
+                    <p>
+                      AES-256-GCM encryption with 2-of-3 Shamir secret sharing
+                    </p>
                   </div>
                 </div>
 
@@ -315,7 +386,7 @@ function App(): React.JSX.Element {
                       />
                     </div>
 
-                    <div className="field">
+                    {/* <div className="field">
                       <label className="field-label">Passphrase</label>
                       <div className="input-with-toggle">
                         <input
@@ -332,9 +403,9 @@ function App(): React.JSX.Element {
                           {showPassphrase ? <EyeOffIcon /> : <EyeIcon />}
                         </button>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className="field">
+                    {/* <div className="field">
                       <label className="field-label">Confirm Passphrase</label>
                       <div className="input-with-toggle">
                         <input
@@ -351,10 +422,13 @@ function App(): React.JSX.Element {
                           {showPassphrase ? <EyeOffIcon /> : <EyeIcon />}
                         </button>
                       </div>
-                      {confirmPassphrase.length > 0 && passphrase !== confirmPassphrase && (
-                        <span className="field-hint field-hint-error">Passphrases do not match</span>
-                      )}
-                    </div>
+                      {confirmPassphrase.length > 0 &&
+                        passphrase !== confirmPassphrase && (
+                          <span className="field-hint field-hint-error">
+                            Passphrases do not match
+                          </span>
+                        )}
+                    </div> */}
 
                     <button
                       className="submit-button"
@@ -366,7 +440,7 @@ function App(): React.JSX.Element {
                       ) : (
                         <>
                           <LockIcon />
-                          <span>Encrypt & Split</span>
+                          <span>Secure & Split</span>
                         </>
                       )}
                     </button>
@@ -382,7 +456,8 @@ function App(): React.JSX.Element {
                 {encryptResult && (
                   <motion.div className="result-section" {...fadeIn}>
                     <div className="result-banner">
-                      Your seed has been encrypted and split into 3 fragments. Follow the instructions on each card to secure them.
+                      Your seed has been encrypted and split into 3 fragments.
+                      Follow the instructions on each card to secure them.
                     </div>
                     <div className="result-label">Generated Fragments</div>
                     <motion.div
@@ -392,11 +467,30 @@ function App(): React.JSX.Element {
                       animate="animate"
                     >
                       {[
-                        { meta: FRAGMENT_META[0], data: encryptResult.fragmentA.data, qr: encryptResult.fragmentA.qr, filename: "kyte-fragment-a.png" },
-                        { meta: FRAGMENT_META[1], data: encryptResult.fragmentB.data, qr: encryptResult.fragmentB.qr, filename: "kyte-fragment-b.png" },
-                        { meta: FRAGMENT_META[2], data: encryptResult.fragmentC.data, qr: encryptResult.fragmentC.qr, filename: "kyte-fragment-c.png" },
+                        {
+                          meta: FRAGMENT_META[0],
+                          data: encryptResult.fragmentA.data,
+                          qr: encryptResult.fragmentA.qr,
+                          filename: "kyte-fragment-a.png",
+                        },
+                        {
+                          meta: FRAGMENT_META[1],
+                          data: encryptResult.fragmentB.data,
+                          qr: encryptResult.fragmentB.qr,
+                          filename: "kyte-fragment-b.png",
+                        },
+                        {
+                          meta: FRAGMENT_META[2],
+                          data: encryptResult.fragmentC.data,
+                          qr: encryptResult.fragmentC.qr,
+                          filename: "kyte-fragment-c.png",
+                        },
                       ].map(({ meta, data, qr, filename }) => (
-                        <motion.div className="fragment-card" key={meta.tag} variants={fadeIn}>
+                        <motion.div
+                          className="fragment-card"
+                          key={meta.tag}
+                          variants={fadeIn}
+                        >
                           <div className="fragment-card-header">
                             <span className="fragment-tag">{meta.tag}</span>
                             <div className="fragment-card-actions">
@@ -412,8 +506,14 @@ function App(): React.JSX.Element {
                                 className="copy-button"
                                 onClick={() => copyToClipboard(data, meta.tag)}
                               >
-                                {copiedTag === meta.tag ? <CheckIcon /> : <CopyIcon />}
-                                <span>{copiedTag === meta.tag ? "Copied" : "Copy"}</span>
+                                {copiedTag === meta.tag ? (
+                                  <CheckIcon />
+                                ) : (
+                                  <CopyIcon />
+                                )}
+                                <span>
+                                  {copiedTag === meta.tag ? "Copied" : "Copy"}
+                                </span>
                               </button>
                             </div>
                           </div>
@@ -431,7 +531,7 @@ function App(): React.JSX.Element {
               </motion.div>
             )}
 
-            {/* ── Decrypt Form ── */}
+            {/* Decrypt Form */}
             {mode === "decrypt" && (
               <motion.div className="form-panel" key="decrypt" {...fadeIn}>
                 <div className="form-header">
@@ -440,21 +540,27 @@ function App(): React.JSX.Element {
                   </button>
                   <div className="form-header-text">
                     <h2>Recover Seed Phrase</h2>
-                    <p>Provide any 2 of 3 fragments and your passphrase</p>
+                    <p>Provide any 2 of 3 fragments</p>
                   </div>
                 </div>
 
                 {!decryptResult && (
                   <motion.div {...fadeIn}>
                     <div className="field">
-                      <label className="field-label">Fragments (any 2 of 3)</label>
+                      <label className="field-label">
+                        Fragments (any 2 of 3)
+                      </label>
                       <div className="fragments-input-group">
                         {fragments.map((frag, i) => (
                           <div className="fragment-input-row" key={i}>
-                            <span className="fragment-input-label">{i + 1}</span>
+                            <span className="fragment-input-label">
+                              {i + 1}
+                            </span>
                             <textarea
                               value={frag}
-                              onChange={(e) => updateFragment(i, e.target.value)}
+                              onChange={(e) =>
+                                updateFragment(i, e.target.value)
+                              }
                               placeholder={`Paste fragment ${i + 1}...`}
                               rows={2}
                             />
@@ -463,7 +569,7 @@ function App(): React.JSX.Element {
                       </div>
                     </div>
 
-                    <div className="field">
+                    {/* <div className="field">
                       <label className="field-label">Passphrase</label>
                       <div className="input-with-toggle">
                         <input
@@ -480,7 +586,7 @@ function App(): React.JSX.Element {
                           {showPassphrase ? <EyeOffIcon /> : <EyeIcon />}
                         </button>
                       </div>
-                    </div>
+                    </div> */}
 
                     <button
                       className="submit-button"
@@ -510,7 +616,9 @@ function App(): React.JSX.Element {
                     <div className="result-label">Recovery Complete</div>
                     <div className="recovered-seed">
                       <div className="recovered-seed-label">Seed Phrase</div>
-                      <div className="recovered-seed-value">{decryptResult}</div>
+                      <div className="recovered-seed-value">
+                        {decryptResult}
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -520,10 +628,10 @@ function App(): React.JSX.Element {
         </div>
       </div>
 
-      {/* ── Footer ── */}
+      {/* Footer */}
       <div className="app-footer">
         <span className="footer-text">
-          AES-256-GCM &middot; PBKDF2-SHA512 &middot; Shamir 2-of-3
+          AES-256-GCM &middot; Shamir Secret Sharing &middot; 2-of-3 Threshold
         </span>
       </div>
     </div>
