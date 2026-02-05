@@ -1,0 +1,52 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-release:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: kyte-windows.exe
+            release_path: packages/app/release/*.exe
+          - os: macos-latest
+            artifact_name: kyte-ios.dmg
+            release_path: packages/app/release/*.dmg
+          - os: ubuntu-latest
+            artifact_name: kyte-ubuntu.tar.gz
+            release_path: packages/app/release/*.tar.gz
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: actions/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build App
+        run: pnpm package
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.release_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
