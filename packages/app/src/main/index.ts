@@ -24,7 +24,7 @@ function createWindow(): BrowserWindow {
 
 ipcMain.handle(
   "seed:encrypt",
-  async (_event, seed: string, passphrase: string) => {
+  async (_event, seed: string, passphrase?: string) => {
     const fragments = await SeedManager.secureSeed({ seed, passphrase });
     const qrA = await generateQR(fragments[0]);
     const qrB = await generateQR(fragments[1]);
@@ -39,7 +39,7 @@ ipcMain.handle(
 
 ipcMain.handle(
   "seed:decrypt",
-  async (_event, fragments: string[], passphrase: string) => {
+  async (_event, fragments: string[], passphrase?: string) => {
     return await SeedManager.recoverSeed(fragments, passphrase);
   }
 );
