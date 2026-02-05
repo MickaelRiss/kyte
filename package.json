@@ -5,7 +5,10 @@
   "type": "module",
   "packageManager": "pnpm@10.27.0",
   "pnpm": {
-    "onlyBuiltDependencies": ["electron", "esbuild"]
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
   },
   "scripts": {
     "build": "pnpm -r build",
@@ -15,5 +18,8 @@
     "test": "pnpm --filter kyte-core test",
     "test:watch": "pnpm --filter kyte-core test:watch",
     "package": "pnpm build:core && pnpm --filter kyte-app package"
+  },
+  "dependencies": {
+    "eslint": "^9.39.2"
   }
 }
