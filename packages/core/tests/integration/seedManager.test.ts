@@ -13,7 +13,7 @@ describe("Integration tests for Seed Manager", () => {
     ])("Encryption should return 3 fragments with index and data value for each of them", async (seed) => {
         const passphrase: string = "@415WSfs)wwf5";
         const encrypted = await SeedManager.secureSeed({seed, passphrase});
-        expectTypeOf(encrypted).toEqualTypeOf<string[]>
+        expectTypeOf(encrypted).toEqualTypeOf<string[]>();
         encrypted.forEach((frag) => {
             expect(frag).toContain("i");
             expect(frag).toContain("data");

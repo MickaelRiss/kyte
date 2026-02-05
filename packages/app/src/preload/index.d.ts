@@ -7,8 +7,8 @@ export interface EncryptResult {
 }
 
 interface KyteAPI {
-  encrypt: (seed: string, passphrase: string) => Promise<EncryptResult>;
-  decrypt: (fragments: string[], passphrase: string) => Promise<string>;
+  encrypt: (seed: string, passphrase?: string) => Promise<EncryptResult>;
+  decrypt: (fragments: string[], passphrase?: string) => Promise<string>;
 }
 
 declare global {

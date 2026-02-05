@@ -67,7 +67,7 @@ export class AESEncryption {
             
             return decrypted;
 
-        } catch(error) {
+        } catch {
             throw new Error('Decryption failed: Invalid passphrase or corrupted data');
         }
     }
