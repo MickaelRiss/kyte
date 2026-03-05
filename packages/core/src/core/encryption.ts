@@ -11,7 +11,7 @@ export class AESEncryption {
     private static readonly ALGORITHM = "aes-256-gcm";
     private static readonly KEY_LENGTH = 32;
     private static readonly SALT_LENGTH = 64;
-    private static readonly IV_LENGTH = 16;
+    private static readonly IV_LENGTH = 12;
     private static readonly ITERATIONS = 100000;
 
     private static deriveKey(passphrase: string, salt: Buffer): Buffer {

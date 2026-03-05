@@ -6,7 +6,7 @@ export class SeedValidator {
     }
 
     static normalizeSeed(seed: string): string {
-        return seed.trim().toLocaleLowerCase();
+        return seed.trim().toLowerCase();
     }
 
     static countSeedWord(seed: string): number {
