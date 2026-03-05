@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, type Easing } from "motion/react";
 import logo from "./assets/logo.png";
-
-interface EncryptResult {
-  fragmentA: { data: string; qr: string };
-  fragmentB: { data: string; qr: string };
-  fragmentC: { data: string; qr: string };
-}
+import { useEncrypt } from "./hooks/useEncrypt";
+import { useDecrypt } from "./hooks/useDecrypt";
 
 const ease: Easing = "easeOut";
+const COPIED_FEEDBACK_MS = 1500;
 
 const fadeIn = {
   initial: { opacity: 0, y: 8 },
@@ -158,82 +155,38 @@ const FRAGMENT_META = [
 
 function App(): React.JSX.Element {
   const [mode, setMode] = useState<"encrypt" | "decrypt" | null>(null);
-  const [seed, setSeed] = useState("");
-  const [fragments, setFragments] = useState(["", ""]);
-  const [encryptResult, setEncryptResult] = useState<EncryptResult | null>(
-    null,
-  );
-  const [decryptResult, setDecryptResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
-  // const [passphrase, setPassphrase] = useState("");
-  // const [confirmPassphrase, setConfirmPassphrase] = useState("");
-  // const [showPassphrase, setShowPassphrase] = useState(false);
+
+  const encryptHook = useEncrypt();
+  const decryptHook = useDecrypt();
 
   const copyToClipboard = async (text: string, tag: string): Promise<void> => {
-    await navigator.clipboard.writeText(text);
-    setCopiedTag(tag);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTag(tag);
+    } catch {
+      // Clipboard API unavailable in this context
+    }
   };
 
   useEffect(() => {
     if (!copiedTag) return;
-    const timeout = setTimeout(() => setCopiedTag(null), 1500);
+    const timeout = setTimeout(() => setCopiedTag(null), COPIED_FEEDBACK_MS);
     return () => clearTimeout(timeout);
   }, [copiedTag]);
 
   const reset = (): void => {
     setMode(null);
-    setSeed("");
-    // setPassphrase("");
-    // setConfirmPassphrase("");
-    // setShowPassphrase(false);
-    setFragments(["", ""]);
-    setEncryptResult(null);
-    setDecryptResult(null);
-    setError(null);
+    encryptHook.reset();
+    decryptHook.reset();
   };
 
-  const handleEncrypt = async (): Promise<void> => {
-    setError(null);
-    setLoading(true);
-    try {
-      const result = await window.kyte.encrypt(seed); // Community: no passphrase
-      setEncryptResult(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Encryption failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDecrypt = async (): Promise<void> => {
-    setError(null);
-    setLoading(true);
-    try {
-      const recovered = await window.kyte.decrypt(
-        fragments.filter((f) => f.trim() !== ""), // Community: no passphrase
-      );
-      setDecryptResult(recovered);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Decryption failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateFragment = (index: number, value: string): void => {
-    setFragments((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  };
+  // const [passphrase, setPassphrase] = useState("");
+  // const [confirmPassphrase, setConfirmPassphrase] = useState("");
+  // const [showPassphrase, setShowPassphrase] = useState(false);
 
   // const canSubmitEncrypt = seed.trim() !== "" && passphrase.trim() !== "" && passphrase === confirmPassphrase;
   // const canSubmitDecrypt = fragments.filter((f) => f.trim() !== "").length >= 2 && passphrase.trim() !== "";
-  const canSubmitEncrypt = seed.trim() !== "";
-  const canSubmitDecrypt = fragments.filter((f) => f.trim() !== "").length >= 2;
 
   return (
     <div className="app-shell">
@@ -326,13 +279,13 @@ function App(): React.JSX.Element {
                   </div>
                 </div>
 
-                {!encryptResult && (
+                {!encryptHook.encryptResult && (
                   <motion.div {...fadeIn}>
                     <div className="field">
                       <label className="field-label">Seed Phrase</label>
                       <textarea
-                        value={seed}
-                        onChange={(e) => setSeed(e.target.value)}
+                        value={encryptHook.seed}
+                        onChange={(e) => encryptHook.setSeed(e.target.value)}
                         placeholder="Enter your BIP39 mnemonic (12-24 words)..."
                         rows={3}
                       />
@@ -384,10 +337,10 @@ function App(): React.JSX.Element {
 
                     <button
                       className="submit-button"
-                      onClick={handleEncrypt}
-                      disabled={loading || !canSubmitEncrypt}
+                      onClick={encryptHook.handleEncrypt}
+                      disabled={encryptHook.loading || !encryptHook.canSubmit}
                     >
-                      {loading ? (
+                      {encryptHook.loading ? (
                         <span className="spinner" />
                       ) : (
                         <>
@@ -399,13 +352,13 @@ function App(): React.JSX.Element {
                   </motion.div>
                 )}
 
-                {error && (
+                {encryptHook.error && (
                   <motion.div className="message message-error" {...fadeIn}>
-                    {error}
+                    {encryptHook.error}
                   </motion.div>
                 )}
 
-                {encryptResult && (
+                {encryptHook.encryptResult && (
                   <motion.div className="result-section" {...fadeIn}>
                     <div className="result-banner">
                       Your seed has been encrypted and split into 3 fragments.
@@ -421,20 +374,20 @@ function App(): React.JSX.Element {
                       {[
                         {
                           meta: FRAGMENT_META[0],
-                          data: encryptResult.fragmentA.data,
-                          qr: encryptResult.fragmentA.qr,
+                          data: encryptHook.encryptResult.fragmentA.data,
+                          qr: encryptHook.encryptResult.fragmentA.qr,
                           filename: "kyte-fragment-a.png",
                         },
                         {
                           meta: FRAGMENT_META[1],
-                          data: encryptResult.fragmentB.data,
-                          qr: encryptResult.fragmentB.qr,
+                          data: encryptHook.encryptResult.fragmentB.data,
+                          qr: encryptHook.encryptResult.fragmentB.qr,
                           filename: "kyte-fragment-b.png",
                         },
                         {
                           meta: FRAGMENT_META[2],
-                          data: encryptResult.fragmentC.data,
-                          qr: encryptResult.fragmentC.qr,
+                          data: encryptHook.encryptResult.fragmentC.data,
+                          qr: encryptHook.encryptResult.fragmentC.qr,
                           filename: "kyte-fragment-c.png",
                         },
                       ].map(({ meta, data, qr, filename }) => (
@@ -496,14 +449,14 @@ function App(): React.JSX.Element {
                   </div>
                 </div>
 
-                {!decryptResult && (
+                {!decryptHook.decryptResult && (
                   <motion.div {...fadeIn}>
                     <div className="field">
                       <label className="field-label">
                         Fragments (any 2 of 3)
                       </label>
                       <div className="fragments-input-group">
-                        {fragments.map((frag, i) => (
+                        {decryptHook.fragments.map((frag, i) => (
                           <div className="fragment-input-row" key={i}>
                             <span className="fragment-input-label">
                               {i + 1}
@@ -511,7 +464,7 @@ function App(): React.JSX.Element {
                             <textarea
                               value={frag}
                               onChange={(e) =>
-                                updateFragment(i, e.target.value)
+                                decryptHook.updateFragment(i, e.target.value)
                               }
                               placeholder={`Paste fragment ${i + 1}...`}
                               rows={2}
@@ -542,10 +495,10 @@ function App(): React.JSX.Element {
 
                     <button
                       className="submit-button"
-                      onClick={handleDecrypt}
-                      disabled={loading || !canSubmitDecrypt}
+                      onClick={decryptHook.handleDecrypt}
+                      disabled={decryptHook.loading || !decryptHook.canSubmit}
                     >
-                      {loading ? (
+                      {decryptHook.loading ? (
                         <span className="spinner" />
                       ) : (
                         <>
@@ -557,19 +510,55 @@ function App(): React.JSX.Element {
                   </motion.div>
                 )}
 
-                {error && (
+                {decryptHook.error && (
                   <motion.div className="message message-error" {...fadeIn}>
-                    {error}
+                    {decryptHook.error}
                   </motion.div>
                 )}
 
-                {decryptResult && (
+                {decryptHook.decryptResult && (
                   <motion.div className="result-section" {...fadeIn}>
                     <div className="result-label">Recovery Complete</div>
                     <div className="recovered-seed">
-                      <div className="recovered-seed-label">Seed Phrase</div>
-                      <div className="recovered-seed-value">
-                        {decryptResult}
+                      <div className="recovered-seed-header">
+                        <div className="recovered-seed-label">Seed Phrase</div>
+                        <div className="recovered-seed-actions">
+                          <button
+                            className="copy-button"
+                            onClick={() =>
+                              copyToClipboard(decryptHook.decryptResult ?? "", "seed")
+                            }
+                          >
+                            {copiedTag === "seed" ? (
+                              <CheckIcon />
+                            ) : (
+                              <CopyIcon />
+                            )}
+                            <span>
+                              {copiedTag === "seed" ? "Copied" : "Copy"}
+                            </span>
+                          </button>
+                          <button
+                            className="copy-button"
+                            onClick={decryptHook.toggleSeedVisible}
+                          >
+                            <span>
+                              {decryptHook.seedVisible ? "Hide" : "Reveal"}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                      <div
+                        className={`recovered-seed-value${decryptHook.seedVisible ? "" : " blurred"}`}
+                        onClick={() =>
+                          !decryptHook.seedVisible &&
+                          decryptHook.toggleSeedVisible()
+                        }
+                      >
+                        {decryptHook.decryptResult}
+                      </div>
+                      <div className="seed-auto-clear-notice">
+                        Clears automatically in 30 seconds
                       </div>
                     </div>
                   </motion.div>
