@@ -23,8 +23,5 @@ if (process.contextIsolated) {
     console.error("Failed to expose APIs:", error);
   }
 } else {
-  // @ts-expect-error fallback for non-isolated context
-  window.electron = electronAPI;
-  // @ts-expect-error fallback for non-isolated context
-  window.kyte = kyteAPI;
+  throw new Error("contextIsolation must be enabled");
 }

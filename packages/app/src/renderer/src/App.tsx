@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, type Easing } from "motion/react";
+import logo from "./assets/logo.png";
 
 interface EncryptResult {
   fragmentA: { data: string; qr: string };
@@ -19,21 +20,6 @@ const fadeIn = {
 const stagger = {
   animate: { transition: { staggerChildren: 0.06 } },
 };
-
-function ShieldIcon(): React.JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
 
 function LockIcon(): React.JSX.Element {
   return (
@@ -276,7 +262,7 @@ function App(): React.JSX.Element {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                  <ShieldIcon />
+                  <img src={logo} alt="Kyte" width={30} height={30} />
                 </motion.div>
 
                 <h1>Kyte</h1>
