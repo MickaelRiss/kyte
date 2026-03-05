@@ -592,6 +592,13 @@ body {
   border-radius: var(--radius);
 }
 
+.recovered-seed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .recovered-seed-label {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -599,7 +606,11 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--success);
-  margin-bottom: 10px;
+}
+
+.recovered-seed-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .recovered-seed-value {
@@ -608,6 +619,21 @@ body {
   line-height: 1.8;
   color: var(--text-primary);
   word-break: break-word;
+  transition: filter 0.2s ease;
+}
+
+.recovered-seed-value.blurred {
+  filter: blur(7px);
+  user-select: none;
+  cursor: pointer;
+}
+
+.seed-auto-clear-notice {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 10px;
 }
 
 /* ── Decrypt Fragments Input ── */
