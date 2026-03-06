@@ -40,8 +40,13 @@ export class SeedManager {
     static async recoverSeed(fragments: string[], passphrase?: string): Promise<string> {
         // Extract hex data from fragment JSON strings
         const fragmentsHex = fragments.map((fragment) => {
-            const parsed = JSON.parse(fragment);
-            return parsed.data as string;
+            try {
+                const parsed = JSON.parse(fragment);
+                if (!parsed?.data) throw new Error();
+                return parsed.data as string;
+            } catch {
+                throw new Error("Invalid fragment format. Please check that you copied the fragment correctly.");
+            }
         });
 
         // Shamir combine to recover the data
