@@ -27,48 +27,46 @@ export class AESEncryption {
     static encrypt(seed: string, passphrase: string): EncryptedSeed {
         const salt: Buffer = crypto.randomBytes(this.SALT_LENGTH);
         const iv: Buffer = crypto.randomBytes(this.IV_LENGTH);
-        
-        // Create derived key
         const key: Buffer = this.deriveKey(passphrase, salt);
-        
-        // Create cipher
-        const cipher = crypto.createCipheriv(this.ALGORITHM, key, iv)
 
-        // Encrypt cipher text
-        let cipherText = cipher.update(seed, "utf-8", "hex");
-        cipherText += cipher.final("hex");
+        let cipherText: string;
+        let tag: Buffer;
 
-        // Get tag
-        const tag: Buffer = cipher.getAuthTag();
+        try {
+            const cipher = crypto.createCipheriv(this.ALGORITHM, key, iv);
+            cipherText = cipher.update(seed, "utf-8", "hex");
+            cipherText += cipher.final("hex");
+            tag = cipher.getAuthTag();
+        } finally {
+            key.fill(0);
+        }
 
         return {
             cipherText,
             iv: iv.toString("hex"),
             salt: salt.toString("hex"),
-            tag: tag.toString("hex")
+            tag: tag!.toString("hex")
         }
     }
 
     static decrypt(encrypted: EncryptedSeed, passphrase: string): string {
+        const iv: Buffer = Buffer.from(encrypted.iv, "hex");
+        const salt: Buffer = Buffer.from(encrypted.salt, "hex");
+        const tag: Buffer = Buffer.from(encrypted.tag, "hex");
+        const key: Buffer = this.deriveKey(passphrase, salt);
+
         try {
-            const cipherText: string = encrypted.cipherText;
-            const iv: Buffer = Buffer.from(encrypted.iv, "hex");
-            const salt: Buffer = Buffer.from(encrypted.salt, "hex");
-            const tag: Buffer = Buffer.from(encrypted.tag, "hex");
-            const key: Buffer = this.deriveKey(passphrase, salt);
-            
-            // Create decipher
             const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);
             decipher.setAuthTag(tag);
 
-            // Decrypt
-            let decrypted = decipher.update(cipherText, "hex", "utf-8");
+            let decrypted = decipher.update(encrypted.cipherText, "hex", "utf-8");
             decrypted += decipher.final("utf-8");
-            
-            return decrypted;
 
+            return decrypted;
         } catch {
             throw new Error('Decryption failed: Invalid passphrase or corrupted data');
+        } finally {
+            key.fill(0);
         }
     }
 }

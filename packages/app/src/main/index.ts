@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 import { SeedManager, generateQR } from "kyte-core";
@@ -47,6 +47,9 @@ ipcMain.handle(
 );
 
 app.whenReady().then(() => {
+  if (!is.dev) {
+    Menu.setApplicationMenu(null);
+  }
   createWindow();
 
   app.on("activate", () => {

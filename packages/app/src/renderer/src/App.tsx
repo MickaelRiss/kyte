@@ -572,7 +572,7 @@ function App(): React.JSX.Element {
       {/* Footer */}
       <div className="app-footer">
         <span className="footer-text">
-          AES-256-GCM &middot; Shamir Secret Sharing &middot; 2-of-3 Threshold
+          Split to protect. Distributed to last. Never lose access again.
         </span>
       </div>
     </div>
