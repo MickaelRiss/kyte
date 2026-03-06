@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 import { SeedManager, generateQR } from "kyte-core";
+import { StoreService } from "./store";
 
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -36,17 +37,39 @@ ipcMain.handle(
       fragmentB: { data: fragments[1], qr: qrB },
       fragmentC: { data: fragments[2], qr: qrC },
     };
-  }
+  },
 );
 
 ipcMain.handle(
   "seed:decrypt",
   async (_event, fragments: string[], passphrase?: string) => {
     return await SeedManager.recoverSeed(fragments, passphrase);
-  }
+  },
 );
 
 app.whenReady().then(() => {
+  const storeService = new StoreService();
+
+  ipcMain.handle("store:get-state", () => {
+    return storeService.getState();
+  });
+
+  ipcMain.handle("store:can-encrypt", () => {
+    return storeService.canEncrypt();
+  });
+
+  ipcMain.handle("store:decrement", () => {
+    return storeService.decrementEncryption();
+  });
+
+  ipcMain.handle("store:activate-guardian", (_event, licenceKey: string) => {
+    return storeService.activateGuardian(licenceKey);
+  });
+
+  ipcMain.handle("store:revoke-guardian", () => {
+    return storeService.revokeGuardian();
+  });
+
   if (!is.dev) {
     Menu.setApplicationMenu(null);
   }

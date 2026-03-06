@@ -3,6 +3,7 @@ import { motion, AnimatePresence, type Easing } from "motion/react";
 import logo from "./assets/logo.png";
 import { useEncrypt } from "./hooks/useEncrypt";
 import { useDecrypt } from "./hooks/useDecrypt";
+import { useStore } from "./hooks/useStore";
 
 const ease: Easing = "easeOut";
 const COPIED_FEEDBACK_MS = 1500;
@@ -157,7 +158,8 @@ function App(): React.JSX.Element {
   const [mode, setMode] = useState<"encrypt" | "decrypt" | null>(null);
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
 
-  const encryptHook = useEncrypt();
+  const { state, refresh } = useStore();
+  const encryptHook = useEncrypt(refresh);
   const decryptHook = useDecrypt();
 
   const copyToClipboard = async (text: string, tag: string): Promise<void> => {
@@ -197,8 +199,11 @@ function App(): React.JSX.Element {
           <span className="titlebar-name">Kyte</span>
         </div>
         <div className="titlebar-status">
-          <span className="status-dot" />
-          <span>Secure</span>
+          <span
+            className="status-dot"
+            style={state?.tier === "guardian" ? { background: "var(--accent)" } : undefined}
+          />
+          <span>{state?.tier === "guardian" ? "Guardian Plan" : "Free Plan"}</span>
         </div>
       </div>
 
