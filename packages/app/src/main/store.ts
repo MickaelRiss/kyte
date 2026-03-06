@@ -82,7 +82,7 @@ export class StoreService {
       tier: data.tier,
       status: data.status,
       encryption_count: data.encryption_count,
-      has_licence_key: data.licence_key_encrypted ? true : false,
+      has_licence_key: data.licence_key_encrypted !== null,
     };
   }
 
@@ -97,16 +97,6 @@ export class StoreService {
     data.encryption_count = Math.max(0, data.encryption_count - 1);
     this.write(data);
     return true;
-  }
-
-  decrementEncryption(): StoreState {
-    if (this.canEncrypt()) {
-      const data = this.read();
-      data.encryption_count = Math.max(0, data.encryption_count - 1);
-      this.write(data);
-    }
-
-    return this.getState();
   }
 
   activateGuardian(licenceKey: string): StoreState {

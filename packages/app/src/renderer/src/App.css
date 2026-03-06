@@ -336,54 +336,6 @@ body {
   font-family: var(--font-mono);
 }
 
-/* ── Input with Toggle ── */
-
-.input-with-toggle {
-  position: relative;
-}
-
-.input-with-toggle input {
-  padding-right: 40px;
-}
-
-.toggle-visibility {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.toggle-visibility:hover {
-  color: var(--text-primary);
-}
-
-.toggle-visibility svg {
-  width: 15px;
-  height: 15px;
-}
-
-.field-hint {
-  display: block;
-  font-size: 11px;
-  margin-top: 6px;
-}
-
-.field-hint-error {
-  color: var(--error);
-}
-
 /* ── Submit Button ── */
 
 .submit-button {
@@ -454,12 +406,6 @@ body {
   background: var(--error-bg);
   border: 1px solid rgba(194, 84, 80, 0.2);
   color: var(--error);
-}
-
-.message-success {
-  background: var(--success-bg);
-  border: 1px solid rgba(74, 158, 110, 0.15);
-  color: var(--success);
 }
 
 /* ── Result Section ── */
