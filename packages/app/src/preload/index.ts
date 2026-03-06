@@ -2,12 +2,6 @@ import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { StoreState } from "../types/store";
 
-export interface EncryptResult {
-  fragmentA: { data: string; qr: string };
-  fragmentB: { data: string; qr: string };
-  fragmentC: { data: string; qr: string };
-}
-
 const kyteAPI = {
   encrypt: (seed: string, passphrase?: string): Promise<EncryptResult> =>
     ipcRenderer.invoke("seed:encrypt", seed, passphrase),

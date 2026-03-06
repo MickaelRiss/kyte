@@ -184,13 +184,6 @@ function App(): React.JSX.Element {
     decryptHook.reset();
   };
 
-  // const [passphrase, setPassphrase] = useState("");
-  // const [confirmPassphrase, setConfirmPassphrase] = useState("");
-  // const [showPassphrase, setShowPassphrase] = useState(false);
-
-  // const canSubmitEncrypt = seed.trim() !== "" && passphrase.trim() !== "" && passphrase === confirmPassphrase;
-  // const canSubmitDecrypt = fragments.filter((f) => f.trim() !== "").length >= 2 && passphrase.trim() !== "";
-
   return (
     <div className="app-shell">
       {/* Titlebar */}
@@ -296,50 +289,6 @@ function App(): React.JSX.Element {
                         rows={3}
                       />
                     </div>
-
-                    {/* <div className="field">
-                      <label className="field-label">Passphrase</label>
-                      <div className="input-with-toggle">
-                        <input
-                          type={showPassphrase ? "text" : "password"}
-                          value={passphrase}
-                          onChange={(e) => setPassphrase(e.target.value)}
-                          placeholder="Enter a strong passphrase"
-                        />
-                        <button
-                          className="toggle-visibility"
-                          onClick={() => setShowPassphrase((v) => !v)}
-                          type="button"
-                        >
-                          {showPassphrase ? <EyeOffIcon /> : <EyeIcon />}
-                        </button>
-                      </div>
-                    </div> */}
-
-                    {/* <div className="field">
-                      <label className="field-label">Confirm Passphrase</label>
-                      <div className="input-with-toggle">
-                        <input
-                          type={showPassphrase ? "text" : "password"}
-                          value={confirmPassphrase}
-                          onChange={(e) => setConfirmPassphrase(e.target.value)}
-                          placeholder="Re-enter your passphrase"
-                        />
-                        <button
-                          className="toggle-visibility"
-                          onClick={() => setShowPassphrase((v) => !v)}
-                          type="button"
-                        >
-                          {showPassphrase ? <EyeOffIcon /> : <EyeIcon />}
-                        </button>
-                      </div>
-                      {confirmPassphrase.length > 0 &&
-                        passphrase !== confirmPassphrase && (
-                          <span className="field-hint field-hint-error">
-                            Passphrases do not match
-                          </span>
-                        )}
-                    </div> */}
 
                     <button
                       className="submit-button"
@@ -479,25 +428,6 @@ function App(): React.JSX.Element {
                         ))}
                       </div>
                     </div>
-
-                    {/* <div className="field">
-                      <label className="field-label">Passphrase</label>
-                      <div className="input-with-toggle">
-                        <input
-                          type={showPassphrase ? "text" : "password"}
-                          value={passphrase}
-                          onChange={(e) => setPassphrase(e.target.value)}
-                          placeholder="Enter your passphrase"
-                        />
-                        <button
-                          className="toggle-visibility"
-                          onClick={() => setShowPassphrase((v) => !v)}
-                          type="button"
-                        >
-                          {showPassphrase ? <EyeOffIcon /> : <EyeIcon />}
-                        </button>
-                      </div>
-                    </div> */}
 
                     <button
                       className="submit-button"
