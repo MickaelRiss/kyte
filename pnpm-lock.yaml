@@ -7,9 +7,6 @@ settings:
 importers:
   .:
     devDependencies:
-      prettier:
-        specifier: ^3.8.1
-        version: 3.8.1
       "@eslint/js":
         specifier: ^9.39.2
         version: 9.39.2
@@ -22,6 +19,9 @@ importers:
       globals:
         specifier: ^17.3.0
         version: 17.3.0
+      prettier:
+        specifier: ^3.8.1
+        version: 3.8.1
       typescript-eslint:
         specifier: ^8.54.0
         version: 8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -31,6 +31,12 @@ importers:
       "@electron-toolkit/utils":
         specifier: ^3.0.0
         version: 3.0.0(electron@34.5.8)
+      "@fontsource/ibm-plex-mono":
+        specifier: ^5.2.7
+        version: 5.2.7
+      "@fontsource/ibm-plex-sans":
+        specifier: ^5.2.8
+        version: 5.2.8
       kyte-core:
         specifier: workspace:*
         version: link:../core
@@ -871,6 +877,18 @@ packages:
         integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==,
       }
     engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
+
+  "@fontsource/ibm-plex-mono@5.2.7":
+    resolution:
+      {
+        integrity: sha512-MKAb8qV+CaiMQn2B0dIi1OV3565NYzp3WN5b4oT6LTkk+F0jR6j0ZN+5BKJiIhffDC3rtBULsYZE65+0018z9w==,
+      }
+
+  "@fontsource/ibm-plex-sans@5.2.8":
+    resolution:
+      {
+        integrity: sha512-eztSXjDhPhcpxNIiGTgMebdLP9qS4rWkysuE1V7c+DjOR0qiezaiDaTwQE7bTnG5HxAY/8M43XKDvs3cYq6ZYQ==,
+      }
 
   "@humanfs/core@0.19.1":
     resolution:
@@ -5559,6 +5577,10 @@ snapshots:
     dependencies:
       "@eslint/core": 0.17.0
       levn: 0.4.1
+
+  "@fontsource/ibm-plex-mono@5.2.7": {}
+
+  "@fontsource/ibm-plex-sans@5.2.8": {}
 
   "@humanfs/core@0.19.1": {}
 

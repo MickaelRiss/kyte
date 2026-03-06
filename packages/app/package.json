@@ -24,21 +24,29 @@
       "out/**/*"
     ],
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "artifactName": "kyte-mac-${version}.${ext}",
       "category": "public.app-category.utilities"
     },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "artifactName": "kyte-windows-${version}.${ext}"
     },
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "artifactName": "kyte-ubuntu-${version}.${ext}"
     }
   },
   "dependencies": {
     "@electron-toolkit/utils": "^3.0.0",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/ibm-plex-sans": "^5.2.8",
     "kyte-core": "workspace:*",
     "motion": "^12.29.2"
   },
