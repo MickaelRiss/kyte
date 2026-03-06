@@ -26,7 +26,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
@@ -111,6 +113,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  margin-right: 6px;
   background: var(--success);
 }
 
@@ -188,7 +191,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
   text-align: left;
 }
 
@@ -252,7 +257,9 @@ body {
   background: transparent;
   cursor: pointer;
   color: var(--text-secondary);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
   flex-shrink: 0;
 }
 
@@ -397,7 +404,9 @@ body {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .submit-button:hover:not(:disabled) {
@@ -426,7 +435,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Messages ── */
@@ -530,7 +541,9 @@ body {
   font-family: var(--font-mono);
   font-size: 10px;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .copy-button:hover {

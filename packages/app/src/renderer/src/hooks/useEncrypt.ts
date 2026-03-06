@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { extractIpcError } from "../utils/ipc";
 
 type EncryptResult = Awaited<ReturnType<typeof window.kyte.encrypt>>;
 
-export function useEncrypt() {
+export function useEncrypt(refresh: () => Promise<void>) {
   const [seed, setSeed] = useState("");
   const [encryptResult, setEncryptResult] = useState<EncryptResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -14,8 +15,9 @@ export function useEncrypt() {
     try {
       const result = await window.kyte.encrypt(seed);
       setEncryptResult(result);
+      await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Encryption failed");
+      setError(extractIpcError(err, "Encryption failed"));
     } finally {
       setLoading(false);
     }
