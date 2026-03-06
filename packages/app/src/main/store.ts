@@ -13,6 +13,8 @@ export interface StoreSchema {
   licence_key_encrypted: string | null; // base64(safeStorage.encryptString(key))
 }
 
+const MAX_ENCRYPTION_COUNT = 10;
+
 //  Default constant matching StoreSchema for Freemium
 const FREE_DEFAULTS: StoreSchema = {
   tier: "free",
@@ -54,7 +56,24 @@ export class StoreService {
   // Only place where we touch the hard drive to READ
   private read(): StoreSchema {
     const rawData = fs.readFileSync(this.storePath, "utf-8");
-    return JSON.parse(rawData) as StoreSchema;
+    const parsed = JSON.parse(rawData);
+
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !["free", "guardian"].includes(parsed.tier) ||
+      ![null, "live", "expired"].includes(parsed.status) ||
+      typeof parsed.encryption_count !== "number" ||
+      !Number.isInteger(parsed.encryption_count) ||
+      parsed.encryption_count < 0 ||
+      parsed.encryption_count > MAX_ENCRYPTION_COUNT ||
+      (parsed.licence_key_encrypted !== null &&
+        typeof parsed.licence_key_encrypted !== "string")
+    ) {
+      throw new Error("Store schema validation failed");
+    }
+
+    return parsed as StoreSchema;
   }
 
   getState(): StoreState {
@@ -70,6 +89,14 @@ export class StoreService {
   canEncrypt(): boolean {
     const { encryption_count }: StoreSchema = this.read();
     return encryption_count > 0;
+  }
+
+  tryConsumeEncryption(): boolean {
+    const data = this.read();
+    if (data.encryption_count <= 0) return false;
+    data.encryption_count = Math.max(0, data.encryption_count - 1);
+    this.write(data);
+    return true;
   }
 
   decrementEncryption(): StoreState {
@@ -93,7 +120,7 @@ export class StoreService {
       const data: StoreSchema = {
         tier: "guardian",
         status: "live",
-        encryption_count: 10,
+        encryption_count: MAX_ENCRYPTION_COUNT,
         licence_key_encrypted: safeStorage
           .encryptString(licenceKey)
           .toString("base64"),

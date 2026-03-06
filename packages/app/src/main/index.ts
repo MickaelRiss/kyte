@@ -25,41 +25,40 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-ipcMain.handle(
-  "seed:encrypt",
-  async (_event, seed: string, passphrase?: string) => {
-    const fragments = await SeedManager.secureSeed({ seed, passphrase });
-    const qrA = await generateQR(fragments[0]);
-    const qrB = await generateQR(fragments[1]);
-    const qrC = await generateQR(fragments[2]);
-    return {
-      fragmentA: { data: fragments[0], qr: qrA },
-      fragmentB: { data: fragments[1], qr: qrB },
-      fragmentC: { data: fragments[2], qr: qrC },
-    };
-  },
-);
-
-ipcMain.handle(
-  "seed:decrypt",
-  async (_event, fragments: string[], passphrase?: string) => {
-    return await SeedManager.recoverSeed(fragments, passphrase);
-  },
-);
-
 app.whenReady().then(() => {
   const storeService = new StoreService();
 
+  ipcMain.handle(
+    "seed:encrypt",
+    async (_event, seed: string, passphrase?: string) => {
+      if (!is.dev && !storeService.tryConsumeEncryption()) {
+        throw new Error(
+          "Encryption quota exhausted. Upgrade to Guardian to continue.",
+        );
+      }
+      const fragments = await SeedManager.secureSeed({ seed, passphrase });
+      const [qrA, qrB, qrC] = await Promise.all([
+        generateQR(fragments[0]),
+        generateQR(fragments[1]),
+        generateQR(fragments[2]),
+      ]);
+      return {
+        fragmentA: { data: fragments[0], qr: qrA },
+        fragmentB: { data: fragments[1], qr: qrB },
+        fragmentC: { data: fragments[2], qr: qrC },
+      };
+    },
+  );
+
+  ipcMain.handle(
+    "seed:decrypt",
+    async (_event, fragments: string[], passphrase?: string) => {
+      return await SeedManager.recoverSeed(fragments, passphrase);
+    },
+  );
+
   ipcMain.handle("store:get-state", () => {
     return storeService.getState();
-  });
-
-  ipcMain.handle("store:can-encrypt", () => {
-    return storeService.canEncrypt();
-  });
-
-  ipcMain.handle("store:decrement", () => {
-    return storeService.decrementEncryption();
   });
 
   ipcMain.handle("store:activate-guardian", (_event, licenceKey: string) => {

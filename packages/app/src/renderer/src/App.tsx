@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, type Easing } from "motion/react";
 import logo from "./assets/logo.png";
 import { useEncrypt } from "./hooks/useEncrypt";
@@ -160,7 +160,8 @@ function App(): React.JSX.Element {
 
   const { state, refresh } = useStore();
   const encryptHook = useEncrypt(refresh);
-  const decryptHook = useDecrypt();
+  const handleDecryptClear = useCallback(() => setMode(null), []);
+  const decryptHook = useDecrypt(handleDecryptClear);
 
   const copyToClipboard = async (text: string, tag: string): Promise<void> => {
     try {

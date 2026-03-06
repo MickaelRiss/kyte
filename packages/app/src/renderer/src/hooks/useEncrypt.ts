@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { extractIpcError } from "../utils/ipc";
 
 type EncryptResult = Awaited<ReturnType<typeof window.kyte.encrypt>>;
 
@@ -12,17 +13,11 @@ export function useEncrypt(refresh: () => Promise<void>) {
     setError(null);
     setLoading(true);
     try {
-      const allowed = await window.store.canEncrypt();
-      if (!allowed) {
-        setError("You have used all your available encryptions. Upgrade to Guardian to continue.");
-        return;
-      }
       const result = await window.kyte.encrypt(seed);
       setEncryptResult(result);
-      await window.store.decrement();
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Encryption failed");
+      setError(extractIpcError(err, "Encryption failed"));
     } finally {
       setLoading(false);
     }

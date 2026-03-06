@@ -19,10 +19,6 @@ const kyteAPI = {
 const store = {
   getState: (): Promise<StoreState> => ipcRenderer.invoke("store:get-state"),
 
-  canEncrypt: (): Promise<boolean> => ipcRenderer.invoke("store:can-encrypt"),
-
-  decrement: (): Promise<StoreState> => ipcRenderer.invoke("store:decrement"),
-
   activateGuardian: (licenceKey: string): Promise<StoreState> =>
     ipcRenderer.invoke("store:activate-guardian", licenceKey),
 
