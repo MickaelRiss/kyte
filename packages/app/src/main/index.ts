@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 import { SeedManager, generateQR } from "kyte-core";
@@ -67,6 +67,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle("store:revoke-guardian", () => {
     return storeService.revokeGuardian();
+  });
+
+  ipcMain.handle("app:open-external", (_event, url: string) => {
+    return shell.openExternal(url);
   });
 
   if (!is.dev) {

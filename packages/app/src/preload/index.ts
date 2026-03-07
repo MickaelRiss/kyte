@@ -18,6 +18,9 @@ const store = {
 
   revokeGuardian: (): Promise<StoreState> =>
     ipcRenderer.invoke("store:revoke-guardian"),
+
+  openExternal: (url: string): Promise<void> =>
+    ipcRenderer.invoke("app:open-external", url),
 };
 
 if (process.contextIsolated) {
