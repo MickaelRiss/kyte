@@ -260,6 +260,23 @@ function App(): React.JSX.Element {
                     </div>
                   </motion.div>
                 </motion.div>
+
+                {state?.tier === "free" && (
+                  <motion.div className="guardian-banner" variants={fadeIn}>
+                    <div className="guardian-banner-hook">
+                      Need more encryptions? More fragments? A panic button?
+                    </div>
+                    <div className="guardian-banner-body">
+                      With Guardian, one password reveals your seed. The other shows a decoy and silently alerts your emergency contacts.
+                    </div>
+                    <button
+                      className="guardian-banner-link"
+                      onClick={() => window.store.openExternal("https://kyte-beryl.vercel.app/")}
+                    >
+                      Discover Guardian →
+                    </button>
+                  </motion.div>
+                )}
               </motion.div>
             )}
 

@@ -7,5 +7,6 @@ declare interface Window {
     getState: () => Promise<import("../../types/store").StoreState>;
     activateGuardian: (licenceKey: string) => Promise<import("../../types/store").StoreState>;
     revokeGuardian: () => Promise<import("../../types/store").StoreState>;
+    openExternal: (url: string) => Promise<void>;
   };
 }
