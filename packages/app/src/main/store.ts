@@ -1,7 +1,7 @@
 import { app, safeStorage } from "electron";
 import fs from "node:fs";
 import path from "node:path";
-import { StoreState } from "../types/store.js";
+import { StoreState } from "../types/store.ts";
 
 export type { StoreState };
 

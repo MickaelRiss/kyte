@@ -373,6 +373,11 @@ body {
   border-color: var(--accent);
 }
 
+.field input:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .field textarea::placeholder,
 .field input::placeholder {
   color: var(--text-muted);
