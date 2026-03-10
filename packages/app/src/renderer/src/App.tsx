@@ -159,6 +159,7 @@ function App(): React.JSX.Element {
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
 
   const { state, refresh } = useStore();
+  const isFree = state?.tier !== "guardian";
   const encryptHook = useEncrypt(refresh);
   const handleDecryptClear = useCallback(() => setMode(null), []);
   const decryptHook = useDecrypt(handleDecryptClear);
@@ -195,9 +196,15 @@ function App(): React.JSX.Element {
         <div className="titlebar-status">
           <span
             className="status-dot"
-            style={state?.tier === "guardian" ? { background: "var(--accent)" } : undefined}
+            style={
+              state?.tier === "guardian"
+                ? { background: "var(--accent)" }
+                : undefined
+            }
           />
-          <span>{state?.tier === "guardian" ? "Guardian Plan" : "Free Plan"}</span>
+          <span>
+            {state?.tier === "guardian" ? "Guardian Plan" : "Free Plan"}
+          </span>
         </div>
       </div>
 
@@ -267,11 +274,16 @@ function App(): React.JSX.Element {
                       Need more encryptions? More fragments? A panic button?
                     </div>
                     <div className="guardian-banner-body">
-                      With Guardian, one password reveals your seed. The other shows a decoy and silently alerts your emergency contacts.
+                      With Guardian, one password reveals your seed. The other
+                      shows a decoy and silently alerts your emergency contacts.
                     </div>
                     <button
                       className="guardian-banner-link"
-                      onClick={() => window.store.openExternal("https://kyte-beryl.vercel.app/")}
+                      onClick={() =>
+                        window.store.openExternal(
+                          "https://kyte-beryl.vercel.app/",
+                        )
+                      }
                     >
                       Discover Guardian →
                     </button>
@@ -297,6 +309,18 @@ function App(): React.JSX.Element {
 
                 {!encryptHook.encryptResult && (
                   <motion.div {...fadeIn}>
+                    <div className="field">
+                      <label className="field-label">Passphrase</label>
+                      <input
+                        disabled={isFree}
+                        value={encryptHook.passphrase}
+                        onChange={(e) =>
+                          encryptHook.setPassphrase(e.target.value)
+                        }
+                        placeholder="Enter your passphrase to use encryption AES-256-GCM."
+                        type="password"
+                      />
+                    </div>
                     <div className="field">
                       <label className="field-label">Seed Phrase</label>
                       <textarea
@@ -446,6 +470,18 @@ function App(): React.JSX.Element {
                       </div>
                     </div>
 
+                    <div className="field">
+                      <label className="field-label">Passphrase</label>
+                      <input
+                        value={decryptHook.passphrase}
+                        onChange={(e) =>
+                          decryptHook.setPassphrase(e.target.value)
+                        }
+                        placeholder="Enter your passphrase to recover."
+                        type="password"
+                      />
+                    </div>
+
                     <button
                       className="submit-button"
                       onClick={decryptHook.handleDecrypt}
@@ -479,7 +515,10 @@ function App(): React.JSX.Element {
                           <button
                             className="copy-button"
                             onClick={() =>
-                              copyToClipboard(decryptHook.decryptResult ?? "", "seed")
+                              copyToClipboard(
+                                decryptHook.decryptResult ?? "",
+                                "seed",
+                              )
                             }
                           >
                             {copiedTag === "seed" ? (

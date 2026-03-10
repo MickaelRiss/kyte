@@ -5,6 +5,7 @@ const SEED_AUTO_CLEAR_MS = 30_000;
 
 export function useDecrypt(onClear?: () => void) {
   const [fragments, setFragments] = useState(["", ""]);
+  const [passphrase, setPassphrase] = useState("");
   const [decryptResult, setDecryptResult] = useState<string | null>(null);
   const [seedVisible, setSeedVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export function useDecrypt(onClear?: () => void) {
     try {
       const recovered = await window.kyte.decrypt(
         fragments.filter((f) => f.trim() !== ""),
+        passphrase || undefined,
       );
       setDecryptResult(recovered);
     } catch (err) {
@@ -47,6 +49,7 @@ export function useDecrypt(onClear?: () => void) {
 
   const reset = (): void => {
     setFragments(["", ""]);
+    setPassphrase("");
     setDecryptResult(null);
     setSeedVisible(false);
     setError(null);
@@ -56,6 +59,8 @@ export function useDecrypt(onClear?: () => void) {
 
   return {
     fragments,
+    passphrase,
+    setPassphrase,
     updateFragment,
     decryptResult,
     seedVisible,
