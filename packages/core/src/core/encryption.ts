@@ -5,6 +5,7 @@ export interface EncryptedSeed {
     iv: string;
     salt: string;
     tag: string;
+    iterations?: number; // absent in legacy data = 100_000; present = actual value used
 }
 
 export class AESEncryption {
@@ -12,13 +13,13 @@ export class AESEncryption {
     private static readonly KEY_LENGTH = 32;
     private static readonly SALT_LENGTH = 64;
     private static readonly IV_LENGTH = 12;
-    private static readonly ITERATIONS = 100000;
+    private static readonly ITERATIONS = 210_000; // OWASP 2023 minimum for PBKDF2-HMAC-SHA512
 
-    private static deriveKey(passphrase: string, salt: Buffer): Buffer {
+    private static deriveKey(passphrase: string, salt: Buffer, iterations = this.ITERATIONS): Buffer {
         return crypto.pbkdf2Sync(
             passphrase,
             salt,
-            this.ITERATIONS,
+            iterations,
             this.KEY_LENGTH,
             "sha512"
         )
@@ -45,7 +46,8 @@ export class AESEncryption {
             cipherText,
             iv: iv.toString("hex"),
             salt: salt.toString("hex"),
-            tag: tag!.toString("hex")
+            tag: tag!.toString("hex"),
+            iterations: this.ITERATIONS,
         }
     }
 
@@ -53,7 +55,7 @@ export class AESEncryption {
         const iv: Buffer = Buffer.from(encrypted.iv, "hex");
         const salt: Buffer = Buffer.from(encrypted.salt, "hex");
         const tag: Buffer = Buffer.from(encrypted.tag, "hex");
-        const key: Buffer = this.deriveKey(passphrase, salt);
+        const key: Buffer = this.deriveKey(passphrase, salt, encrypted.iterations ?? 100_000);
 
         try {
             const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);

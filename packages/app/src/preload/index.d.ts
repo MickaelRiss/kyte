@@ -1,13 +1,14 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
 
-export interface EncryptResult {
-  fragmentA: { data: string; qr: string };
-  fragmentB: { data: string; qr: string };
-  fragmentC: { data: string; qr: string };
+export type EncryptResult = Array<{ data: string; qr: string }>;
+
+export interface GuardianOptions {
+  totalFragments?: number;
+  threshold?: number;
 }
 
 interface KyteAPI {
-  encrypt: (seed: string, passphrase?: string) => Promise<EncryptResult>;
+  encrypt: (seed: string, passphrase?: string, options?: GuardianOptions) => Promise<EncryptResult>;
   decrypt: (fragments: string[], passphrase?: string) => Promise<string>;
 }
 

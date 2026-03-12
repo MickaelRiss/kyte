@@ -1,0 +1,3 @@
+export const MAX_FRAGMENTS = 10;
+export const MAX_FRAGMENT_LENGTH = 8192;
+export const FREE_ENCRYPTION_QUOTA = 1;
