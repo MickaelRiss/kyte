@@ -30,24 +30,20 @@ export class AESEncryption {
         const iv: Buffer = crypto.randomBytes(this.IV_LENGTH);
         const key: Buffer = this.deriveKey(passphrase, salt);
 
-        let cipherText: string;
-        let tag: Buffer;
-
         try {
             const cipher = crypto.createCipheriv(this.ALGORITHM, key, iv);
-            cipherText = cipher.update(seed, "utf-8", "hex");
-            cipherText += cipher.final("hex");
-            tag = cipher.getAuthTag();
+            const cipherText = cipher.update(seed, "utf-8", "hex") + cipher.final("hex");
+            const tag = cipher.getAuthTag();
+
+            return {
+                cipherText,
+                iv: iv.toString("hex"),
+                salt: salt.toString("hex"),
+                tag: tag.toString("hex"),
+                iterations: this.ITERATIONS,
+            };
         } finally {
             key.fill(0);
-        }
-
-        return {
-            cipherText,
-            iv: iv.toString("hex"),
-            salt: salt.toString("hex"),
-            tag: tag!.toString("hex"),
-            iterations: this.ITERATIONS,
         }
     }
 

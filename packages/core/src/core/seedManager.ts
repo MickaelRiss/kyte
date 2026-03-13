@@ -18,9 +18,8 @@ export class SeedManager {
     totalFragments,
   }: UserInformations): Promise<string[]> {
     // Validate
-    const seedNormalize = SeedValidator.normalizeSeed(seed);
-    const finalSeed = SeedValidator.validateSeed(seedNormalize);
-    if (!finalSeed)
+    const normalizedSeed = SeedValidator.normalizeSeed(seed);
+    if (!SeedValidator.validateSeed(normalizedSeed))
       throw new Error(
         "Your seed isn't following bip39 convention, please contact your platform.",
       );
@@ -31,13 +30,13 @@ export class SeedManager {
     if (passphrase) {
       // Pro version: double encryption (AES + Shamir)
       const encrypted: EncryptedSeed = AESEncryption.encrypt(
-        seedNormalize,
+        normalizedSeed,
         passphrase,
       );
       dataToSplit = JSON.stringify(encrypted);
     } else {
       // Community version: Shamir-only (no passphrase encryption)
-      dataToSplit = seedNormalize;
+      dataToSplit = normalizedSeed;
     }
 
     // Split with Shamir

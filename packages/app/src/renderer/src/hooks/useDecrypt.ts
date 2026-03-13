@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { extractIpcError } from "../utils/ipc";
+import { MAX_FRAGMENTS } from "../../../constants";
 
 const SEED_AUTO_CLEAR_MS = 30_000;
-const MAX_FRAGMENTS = 10;
 
 function parseFragmentMeta(raw: string): { threshold?: number; total?: number } {
   try {
