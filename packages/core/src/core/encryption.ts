@@ -30,13 +30,17 @@ export class AESEncryption {
         const iv: Buffer = crypto.randomBytes(this.IV_LENGTH);
         const key: Buffer = this.deriveKey(passphrase, salt);
 
-  static encrypt(seed: string, passphrase: string): EncryptedSeed {
-    const salt: Buffer = crypto.randomBytes(this.SALT_LENGTH);
-    const iv: Buffer = crypto.randomBytes(this.IV_LENGTH);
-    const key: Buffer = this.deriveKey(passphrase, salt);
+        let cipherText: string;
+        let tag: Buffer;
 
-    let cipherText: string;
-    let tag: Buffer;
+        try {
+            const cipher = crypto.createCipheriv(this.ALGORITHM, key, iv);
+            cipherText = cipher.update(seed, "utf-8", "hex");
+            cipherText += cipher.final("hex");
+            tag = cipher.getAuthTag();
+        } finally {
+            key.fill(0);
+        }
 
         return {
             cipherText,
@@ -53,26 +57,20 @@ export class AESEncryption {
         const tag: Buffer = Buffer.from(encrypted.tag, "hex");
         const key: Buffer = this.deriveKey(passphrase, salt, encrypted.iterations ?? 100_000);
 
-  static decrypt(encrypted: EncryptedSeed, passphrase: string): string {
-    const iv: Buffer = Buffer.from(encrypted.iv, "hex");
-    const salt: Buffer = Buffer.from(encrypted.salt, "hex");
-    const tag: Buffer = Buffer.from(encrypted.tag, "hex");
-    const key: Buffer = this.deriveKey(passphrase, salt);
+        try {
+            const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);
+            decipher.setAuthTag(tag);
 
-    try {
-      const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);
-      decipher.setAuthTag(tag);
+            let decrypted = decipher.update(encrypted.cipherText, "hex", "utf-8");
+            decrypted += decipher.final("utf-8");
 
-      let decrypted = decipher.update(encrypted.cipherText, "hex", "utf-8");
-      decrypted += decipher.final("utf-8");
-
-      return decrypted;
-    } catch {
-      throw new Error(
-        "Decryption failed: Invalid passphrase or corrupted data",
-      );
-    } finally {
-      key.fill(0);
+            return decrypted;
+        } catch {
+            throw new Error(
+                "Decryption failed: Invalid passphrase or corrupted data",
+            );
+        } finally {
+            key.fill(0);
+        }
     }
-  }
 }
