@@ -7,9 +7,6 @@ export interface ShamirSplit {
 }
 
 export class ShamirSecret {
-  private static readonly THRESHOLD: number = 2;
-  private static readonly TOTALFRAGMENTS: number = 3;
-
   private static toUint8Array(data: string): Uint8Array {
     return new TextEncoder().encode(data);
   }
@@ -32,26 +29,40 @@ export class ShamirSecret {
     return new Uint8Array(matches.map((byte) => parseInt(byte, 16)));
   }
 
-  static async split(seedEncrypted: string): Promise<ShamirSplit> {
+  static async split(
+    seedEncrypted: string,
+    totalFragments: number = 3,
+    threshold: number = 2,
+  ): Promise<ShamirSplit> {
+    if (totalFragments < 3 || totalFragments > 10) {
+      throw new Error("Total fragments must be between 3 and 10.");
+    }
+
+    if (threshold < 2) {
+      throw new Error("Threshold must be at least 2.");
+    }
+
+    if (threshold > totalFragments) {
+      throw new Error("Threshold must not exceed total fragments.");
+    }
     const secret = this.toUint8Array(seedEncrypted);
-    const sharesUint8 = await split(
-      secret,
-      this.TOTALFRAGMENTS,
-      this.THRESHOLD,
-    );
+    const sharesUint8 = await split(secret, totalFragments, threshold);
     const fragmentsHex = sharesUint8.map((share) =>
       this.uint8ArrayToHex(share),
     );
     return {
       fragments: fragmentsHex,
-      threshold: this.THRESHOLD,
-      total: this.TOTALFRAGMENTS,
+      threshold,
+      total: totalFragments,
     };
   }
 
-  static async combine(fragmentsHex: string[]): Promise<string> {
-    if (fragmentsHex.length < this.THRESHOLD)
-      throw new Error(`You need at least ${this.THRESHOLD} fragments.`);
+  static async combine(
+    fragmentsHex: string[],
+    threshold: number = 2,
+  ): Promise<string> {
+    if (fragmentsHex.length < threshold)
+      throw new Error(`You need at least ${threshold} fragments.`);
 
     const sharesUint8 = fragmentsHex.map((hex) => this.hexToUint8Array(hex));
     const reconstructed = await combine(sharesUint8);

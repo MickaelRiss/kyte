@@ -3,8 +3,12 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { StoreState } from "../types/store";
 
 const kyteAPI = {
-  encrypt: (seed: string, passphrase?: string): Promise<EncryptResult> =>
-    ipcRenderer.invoke("seed:encrypt", seed, passphrase),
+  encrypt: (
+    seed: string,
+    passphrase?: string,
+    options?: { totalFragments?: number; threshold?: number },
+  ): Promise<EncryptResult> =>
+    ipcRenderer.invoke("seed:encrypt", seed, passphrase, options),
 
   decrypt: (fragments: string[], passphrase?: string): Promise<string> =>
     ipcRenderer.invoke("seed:decrypt", fragments, passphrase),

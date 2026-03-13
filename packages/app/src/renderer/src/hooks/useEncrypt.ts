@@ -5,18 +5,19 @@ type EncryptResult = Awaited<ReturnType<typeof window.kyte.encrypt>>;
 
 export function useEncrypt(refresh: () => Promise<void>) {
   const [seed, setSeed] = useState("");
-  const [passphrase, setPassphrase] = useState("");
-  const [encryptResult, setEncryptResult] = useState<EncryptResult | null>(
-    null,
-  );
+  const [totalFragments, setTotalFragments] = useState(3);
+  const [threshold, setThreshold] = useState(2);
+  const [encryptResult, setEncryptResult] = useState<EncryptResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleEncrypt = async (): Promise<void> => {
     setError(null);
     setLoading(true);
+    const seedSnapshot = seed;
+    setSeed("");
     try {
-      const result = await window.kyte.encrypt(seed, passphrase);
+      const result = await window.kyte.encrypt(seedSnapshot, undefined, { totalFragments, threshold });
       setEncryptResult(result);
       await refresh();
     } catch (err) {
@@ -28,7 +29,8 @@ export function useEncrypt(refresh: () => Promise<void>) {
 
   const reset = (): void => {
     setSeed("");
-    setPassphrase("");
+    setTotalFragments(3);
+    setThreshold(2);
     setEncryptResult(null);
     setError(null);
   };
@@ -38,8 +40,10 @@ export function useEncrypt(refresh: () => Promise<void>) {
   return {
     seed,
     setSeed,
-    passphrase,
-    setPassphrase,
+    totalFragments,
+    setTotalFragments,
+    threshold,
+    setThreshold,
     encryptResult,
     error,
     loading,

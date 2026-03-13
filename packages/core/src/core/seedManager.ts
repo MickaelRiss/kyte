@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { SeedValidator } from "../utils/validator.js";
 import { AESEncryption, EncryptedSeed } from "./encryption.js";
 import { ShamirSecret } from "./shamir.js";
@@ -5,12 +6,16 @@ import { ShamirSecret } from "./shamir.js";
 export interface UserInformations {
   seed: string;
   passphrase?: string; // Optional: undefined = Community (Shamir-only), string = Pro (double encryption)
+  threshold?: number;
+  totalFragments?: number;
 }
 
 export class SeedManager {
   static async secureSeed({
     seed,
     passphrase,
+    threshold,
+    totalFragments,
   }: UserInformations): Promise<string[]> {
     // Validate
     const seedNormalize = SeedValidator.normalizeSeed(seed);
@@ -36,26 +41,44 @@ export class SeedManager {
     }
 
     // Split with Shamir
-    const shamirResult = await ShamirSecret.split(dataToSplit);
-
-    // Create JSON stringify object for each fragment
-    const [fragmentA, fragmentB, fragmentC] = shamirResult.fragments.map(
-      (fragment, index) => JSON.stringify({ i: index + 1, data: fragment }),
+    const shamirResult = await ShamirSecret.split(
+      dataToSplit,
+      totalFragments,
+      threshold,
     );
 
-    return [fragmentA, fragmentB, fragmentC];
+    // Generate a non-secret backup ID to detect fragments from different backups
+    const backupId = randomBytes(16).toString("hex");
+
+    const fragments = shamirResult.fragments.map((fragment, index) => {
+      return JSON.stringify({
+        i: index + 1,
+        data: fragment,
+        threshold: shamirResult.threshold,
+        total: shamirResult.total,
+        bid: backupId,
+      });
+    });
+
+    return fragments;
   }
 
   static async recoverSeed(
     fragments: string[],
     passphrase?: string,
   ): Promise<string> {
-    // Extract hex data from fragment JSON strings
-    const fragmentsHex = fragments.map((fragment) => {
+    // Extract hex data and threshold from fragment JSON strings
+    const parsedFragments = fragments.map((fragment) => {
       try {
         const parsed = JSON.parse(fragment);
-        if (!parsed?.data) throw new Error();
-        return parsed.data as string;
+        if (!parsed?.data || typeof parsed.threshold !== "number")
+          throw new Error();
+        return {
+          i: parsed.i as number,
+          hex: parsed.data as string,
+          threshold: parsed.threshold as number,
+          bid: typeof parsed.bid === "string" ? parsed.bid : undefined,
+        };
       } catch {
         throw new Error(
           "Invalid fragment format. Please check that you copied the fragment correctly.",
@@ -63,8 +86,27 @@ export class SeedManager {
       }
     });
 
+    // Verify all fragments agree on the same threshold
+    const thresholds = new Set(parsedFragments.map((f) => f.threshold));
+    if (thresholds.size > 1) {
+      throw new Error(
+        "Fragments do not match: they were created with different settings. Make sure all fragments are from the same backup.",
+      );
+    }
+
+    // Verify all fragments share the same backup ID (catches mixing fragments from different backups)
+    const bids = new Set(parsedFragments.map((f) => f.bid).filter((bid): bid is string => bid !== undefined));
+    if (bids.size > 1) {
+      throw new Error(
+        "Fragments are from different backups. Make sure all fragments are from the same backup.",
+      );
+    }
+
+    const threshold = parsedFragments[0].threshold;
+    const fragmentsHex = parsedFragments.map((f) => f.hex);
+
     // Shamir combine to recover the data
-    const combinedData = await ShamirSecret.combine(fragmentsHex);
+    const combinedData = await ShamirSecret.combine(fragmentsHex, threshold);
 
     // Determine if we need to decrypt based on license tier
     let seed: string;

@@ -1,8 +1,17 @@
 import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
-import { SeedManager, generateQR } from "kyte-core";
+import { SeedManager, SeedValidator, generateQR } from "kyte-core";
 import { StoreService } from "./store";
+import { MAX_FRAGMENTS, MAX_FRAGMENT_LENGTH } from "../constants.js";
+
+const ALLOWED_EXTERNAL_URL = "https://kyte-beryl.vercel.app/";
+
+function toSafeInt(value: unknown, fallback: number, min: number, max: number): number {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < min || n > max) return fallback;
+  return n;
+}
 
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -30,30 +39,64 @@ app.whenReady().then(() => {
 
   ipcMain.handle(
     "seed:encrypt",
-    async (_event, seed: string, passphrase?: string) => {
-      if (!is.dev && !storeService.tryConsumeEncryption()) {
+    async (
+      _event,
+      seed: unknown,
+      passphrase?: unknown,
+      options?: unknown,
+    ) => {
+      if (typeof seed !== "string" || seed.length === 0 || seed.length > 1024) {
+        throw new Error("Invalid seed input.");
+      }
+      if (passphrase !== undefined && (typeof passphrase !== "string" || passphrase.length > 1024)) {
+        throw new Error("Invalid passphrase.");
+      }
+
+      const normalizedSeed = SeedValidator.normalizeSeed(seed as string);
+      if (!SeedValidator.validateSeed(normalizedSeed)) {
+        throw new Error("Invalid BIP39 seed phrase.");
+      }
+
+      const state = storeService.tryConsumeEncryption();
+      if (!state) {
         throw new Error(
           "Encryption quota exhausted. Upgrade to Guardian to continue.",
         );
       }
-      const fragments = await SeedManager.secureSeed({ seed, passphrase });
-      const [qrA, qrB, qrC] = await Promise.all([
-        generateQR(fragments[0]),
-        generateQR(fragments[1]),
-        generateQR(fragments[2]),
-      ]);
-      return {
-        fragmentA: { data: fragments[0], qr: qrA },
-        fragmentB: { data: fragments[1], qr: qrB },
-        fragmentC: { data: fragments[2], qr: qrC },
-      };
+      const isGuardian = state.tier === "guardian" && state.status === "live";
+      const opts = options !== null && typeof options === "object" ? options as Record<string, unknown> : {};
+
+      const totalFragments = isGuardian ? toSafeInt(opts.totalFragments, 3, 3, 10) : 3;
+      const threshold = isGuardian ? toSafeInt(opts.threshold, 2, 2, totalFragments) : 2;
+
+      const fragments = await SeedManager.secureSeed({
+        seed: normalizedSeed,
+        passphrase: passphrase as string | undefined,
+        totalFragments,
+        threshold,
+      });
+
+      const qrCodes = await Promise.all(fragments.map((f) => generateQR(f)));
+
+      return fragments.map((data, i) => ({ data, qr: qrCodes[i] }));
     },
   );
 
   ipcMain.handle(
     "seed:decrypt",
-    async (_event, fragments: string[], passphrase?: string) => {
-      return await SeedManager.recoverSeed(fragments, passphrase);
+    async (_event, fragments: unknown, passphrase?: unknown) => {
+      if (!Array.isArray(fragments) || fragments.length < 2 || fragments.length > MAX_FRAGMENTS) {
+        throw new Error("Invalid fragments input.");
+      }
+      for (const f of fragments) {
+        if (typeof f !== "string" || f.length === 0 || f.length > MAX_FRAGMENT_LENGTH) {
+          throw new Error("Invalid fragment value.");
+        }
+      }
+      if (passphrase !== undefined && (typeof passphrase !== "string" || passphrase.length > 1024)) {
+        throw new Error("Invalid passphrase.");
+      }
+      return await SeedManager.recoverSeed(fragments, passphrase as string | undefined);
     },
   );
 
@@ -61,7 +104,10 @@ app.whenReady().then(() => {
     return storeService.getState();
   });
 
-  ipcMain.handle("store:activate-guardian", (_event, licenceKey: string) => {
+  ipcMain.handle("store:activate-guardian", (_event, licenceKey: unknown) => {
+    if (typeof licenceKey !== "string" || licenceKey.length === 0 || licenceKey.length > 512) {
+      throw new Error("Invalid licence key.");
+    }
     return storeService.activateGuardian(licenceKey);
   });
 
@@ -69,7 +115,8 @@ app.whenReady().then(() => {
     return storeService.revokeGuardian();
   });
 
-  ipcMain.handle("app:open-external", (_event, url: string) => {
+  ipcMain.handle("app:open-external", (_event, url: unknown) => {
+    if (typeof url !== "string" || url !== ALLOWED_EXTERNAL_URL) return;
     return shell.openExternal(url);
   });
 

@@ -1,7 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { extractIpcError } from "../utils/ipc";
 
 const SEED_AUTO_CLEAR_MS = 30_000;
+const MAX_FRAGMENTS = 10;
+
+function parseFragmentMeta(raw: string): { threshold?: number; total?: number } {
+  try {
+    const parsed = JSON.parse(raw.trim());
+    return {
+      threshold: typeof parsed.threshold === "number" ? parsed.threshold : undefined,
+      total: typeof parsed.total === "number" ? parsed.total : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
 
 export function useDecrypt(onClear?: () => void) {
   const [fragments, setFragments] = useState(["", ""]);
@@ -21,6 +34,18 @@ export function useDecrypt(onClear?: () => void) {
     return () => clearTimeout(timeout);
   }, [decryptResult, onClear]);
 
+  // Derive threshold hint from the first parseable non-empty fragment
+  const fragmentHint = useMemo((): { threshold: number; total: number } | null => {
+    for (const frag of fragments) {
+      if (!frag.trim()) continue;
+      const meta = parseFragmentMeta(frag);
+      if (meta.threshold && meta.total) {
+        return { threshold: meta.threshold, total: meta.total };
+      }
+    }
+    return null;
+  }, [fragments]);
+
   const updateFragment = (index: number, value: string): void => {
     setFragments((prev) => {
       const next = [...prev];
@@ -29,13 +54,26 @@ export function useDecrypt(onClear?: () => void) {
     });
   };
 
+  const addFragment = (): void => {
+    setFragments((prev) => (prev.length < MAX_FRAGMENTS ? [...prev, ""] : prev));
+  };
+
+  const removeFragment = (index: number): void => {
+    setFragments((prev) => {
+      if (prev.length <= 2) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const handleDecrypt = async (): Promise<void> => {
     setError(null);
     setLoading(true);
+    const passphraseSnapshot = passphrase.trim() || undefined;
+    setPassphrase("");
     try {
       const recovered = await window.kyte.decrypt(
         fragments.filter((f) => f.trim() !== ""),
-        passphrase || undefined,
+        passphraseSnapshot,
       );
       setDecryptResult(recovered);
     } catch (err) {
@@ -55,19 +93,27 @@ export function useDecrypt(onClear?: () => void) {
     setError(null);
   };
 
-  const canSubmit = fragments.filter((f) => f.trim() !== "").length >= 2;
+  const filledCount = fragments.filter((f) => f.trim() !== "").length;
+  const rawThreshold = fragmentHint?.threshold ?? 2;
+  const requiredThreshold = Math.max(2, Math.min(rawThreshold, MAX_FRAGMENTS));
+  const canSubmit = filledCount >= requiredThreshold;
+  const canAddMore = fragments.length < MAX_FRAGMENTS;
 
   return {
     fragments,
     passphrase,
     setPassphrase,
     updateFragment,
+    addFragment,
+    removeFragment,
+    fragmentHint,
     decryptResult,
     seedVisible,
     toggleSeedVisible,
     error,
     loading,
     canSubmit,
+    canAddMore,
     handleDecrypt,
     reset,
   };

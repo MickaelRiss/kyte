@@ -124,35 +124,21 @@ function downloadDataUrl(dataUrl: string, filename: string): void {
   document.body.removeChild(link);
 }
 
-const FRAGMENT_META = [
-  {
-    tag: "Fragment A",
-    dest: "You keep this",
-    steps: [
-      'Click "Download QR"',
-      "Print the QR code",
-      "Store it somewhere safe (safe, lockbox...)",
-    ],
-  },
-  {
-    tag: "Fragment B",
-    dest: "Trusted person",
-    steps: [
-      'Click "Download QR"',
-      "Print the QR code",
-      "Give it to someone you trust (family, friend...)",
-    ],
-  },
-  {
-    tag: "Fragment C",
-    dest: "Cloud backup",
-    steps: [
-      'Click "Download QR"',
-      "Go to your cloud drive (Google Drive, iCloud, AWS...)",
-      'Upload "kyte-fragment-c.png"',
-    ],
-  },
+const DEFAULT_FRAGMENT_META = [
+  { dest: "You keep this" },
+  { dest: "Trusted person" },
+  { dest: "Cloud backup" },
 ];
+
+function getFragmentMeta(index: number): { label: string; tag: string; dest: string } {
+  const label = String.fromCharCode(65 + index); // A, B, C, D, ...
+  const preset = DEFAULT_FRAGMENT_META[index];
+  return {
+    label,
+    tag: `Fragment ${label}`,
+    dest: preset?.dest ?? `Guardian ${index + 1}`,
+  };
+}
 
 function App(): React.JSX.Element {
   const [mode, setMode] = useState<"encrypt" | "decrypt" | null>(null);
@@ -197,8 +183,8 @@ function App(): React.JSX.Element {
           <span
             className="status-dot"
             style={
-              state?.tier === "guardian"
-                ? { background: "var(--accent)" }
+              state?.encryption_count === 0
+                ? { background: "var(--error)" }
                 : undefined
             }
           />
@@ -247,7 +233,9 @@ function App(): React.JSX.Element {
                     </div>
                     <div className="mode-card-title">Secure</div>
                     <div className="mode-card-desc">
-                      Split your seed phrase into 3 fragments
+                      {state?.tier === "guardian"
+                        ? "Split your seed into up to 10 fragments"
+                        : "Split your seed phrase into 3 fragments"}
                     </div>
                   </motion.div>
 
@@ -263,7 +251,7 @@ function App(): React.JSX.Element {
                     </div>
                     <div className="mode-card-title">Recover</div>
                     <div className="mode-card-desc">
-                      Restore your seed from any 2 fragments
+                      Restore your seed from your fragments
                     </div>
                   </motion.div>
                 </motion.div>
@@ -302,7 +290,7 @@ function App(): React.JSX.Element {
                   <div className="form-header-text">
                     <h2>Secure Seed Phrase</h2>
                     <p>
-                      AES-256-GCM encryption with 2-of-3 Shamir secret sharing
+                      {`AES-256-GCM encryption with ${encryptHook.threshold}-of-${encryptHook.totalFragments} Shamir secret sharing`}
                     </p>
                   </div>
                 </div>
@@ -331,6 +319,55 @@ function App(): React.JSX.Element {
                       />
                     </div>
 
+                    {state?.tier === "guardian" && (
+                      <div className="guardian-split-controls">
+                        <div className="field">
+                          <label className="field-label">
+                            Total fragments
+                            <span className="field-hint"> (3–10)</span>
+                          </label>
+                          <div className="stepper">
+                            <button
+                              className="stepper-btn"
+                              disabled={encryptHook.totalFragments <= 3}
+                              onClick={() => {
+                                const n = encryptHook.totalFragments - 1;
+                                encryptHook.setTotalFragments(n);
+                                if (encryptHook.threshold > n) {
+                                  encryptHook.setThreshold(n);
+                                }
+                              }}
+                            >−</button>
+                            <span className="stepper-value">{encryptHook.totalFragments}</span>
+                            <button
+                              className="stepper-btn"
+                              disabled={encryptHook.totalFragments >= 10}
+                              onClick={() => encryptHook.setTotalFragments(encryptHook.totalFragments + 1)}
+                            >+</button>
+                          </div>
+                        </div>
+                        <div className="field">
+                          <label className="field-label">
+                            Minimum to recover
+                            <span className="field-hint"> (2–{encryptHook.totalFragments})</span>
+                          </label>
+                          <div className="stepper">
+                            <button
+                              className="stepper-btn"
+                              disabled={encryptHook.threshold <= 2}
+                              onClick={() => encryptHook.setThreshold(encryptHook.threshold - 1)}
+                            >−</button>
+                            <span className="stepper-value">{encryptHook.threshold}</span>
+                            <button
+                              className="stepper-btn"
+                              disabled={encryptHook.threshold >= encryptHook.totalFragments}
+                              onClick={() => encryptHook.setThreshold(encryptHook.threshold + 1)}
+                            >+</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <button
                       className="submit-button"
                       onClick={encryptHook.handleEncrypt}
@@ -357,8 +394,9 @@ function App(): React.JSX.Element {
                 {encryptHook.encryptResult && (
                   <motion.div className="result-section" {...fadeIn}>
                     <div className="result-banner">
-                      Your seed has been encrypted and split into 3 fragments.
-                      Follow the instructions on each card to secure them.
+                      Your seed has been encrypted and split into{" "}
+                      {encryptHook.encryptResult.length} fragments. Follow the
+                      instructions on each card to secure them.
                     </div>
                     <div className="result-label">Generated Fragments</div>
                     <motion.div
@@ -367,65 +405,45 @@ function App(): React.JSX.Element {
                       initial="initial"
                       animate="animate"
                     >
-                      {[
-                        {
-                          meta: FRAGMENT_META[0],
-                          data: encryptHook.encryptResult.fragmentA.data,
-                          qr: encryptHook.encryptResult.fragmentA.qr,
-                          filename: "kyte-fragment-a.png",
-                        },
-                        {
-                          meta: FRAGMENT_META[1],
-                          data: encryptHook.encryptResult.fragmentB.data,
-                          qr: encryptHook.encryptResult.fragmentB.qr,
-                          filename: "kyte-fragment-b.png",
-                        },
-                        {
-                          meta: FRAGMENT_META[2],
-                          data: encryptHook.encryptResult.fragmentC.data,
-                          qr: encryptHook.encryptResult.fragmentC.qr,
-                          filename: "kyte-fragment-c.png",
-                        },
-                      ].map(({ meta, data, qr, filename }) => (
-                        <motion.div
-                          className="fragment-card"
-                          key={meta.tag}
-                          variants={fadeIn}
-                        >
-                          <div className="fragment-card-header">
-                            <span className="fragment-tag">{meta.tag}</span>
-                            <div className="fragment-card-actions">
-                              <span className="fragment-dest">{meta.dest}</span>
-                              <button
-                                className="copy-button"
-                                onClick={() => downloadDataUrl(qr, filename)}
-                              >
-                                <DownloadIcon />
-                                <span>QR</span>
-                              </button>
-                              <button
-                                className="copy-button"
-                                onClick={() => copyToClipboard(data, meta.tag)}
-                              >
-                                {copiedTag === meta.tag ? (
-                                  <CheckIcon />
-                                ) : (
-                                  <CopyIcon />
-                                )}
-                                <span>
-                                  {copiedTag === meta.tag ? "Copied" : "Copy"}
-                                </span>
-                              </button>
+                      {encryptHook.encryptResult.map(({ data, qr }, index) => {
+                        const meta = getFragmentMeta(index);
+                        const filename = `kyte-fragment-${meta.label.toLowerCase()}.png`;
+                        return (
+                          <motion.div
+                            className="fragment-card"
+                            key={meta.tag}
+                            variants={fadeIn}
+                          >
+                            <div className="fragment-card-header">
+                              <span className="fragment-tag">{meta.tag}</span>
+                              <div className="fragment-card-actions">
+                                <span className="fragment-dest">{meta.dest}</span>
+                                <button
+                                  className="copy-button"
+                                  onClick={() => downloadDataUrl(qr, filename)}
+                                >
+                                  <DownloadIcon />
+                                  <span>QR</span>
+                                </button>
+                                <button
+                                  className="copy-button"
+                                  onClick={() => copyToClipboard(data, meta.tag)}
+                                >
+                                  {copiedTag === meta.tag ? (
+                                    <CheckIcon />
+                                  ) : (
+                                    <CopyIcon />
+                                  )}
+                                  <span>
+                                    {copiedTag === meta.tag ? "Copied" : "Copy"}
+                                  </span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                          <ol className="fragment-steps">
-                            {meta.steps.map((step, i) => (
-                              <li key={i}>{step}</li>
-                            ))}
-                          </ol>
-                          <div className="fragment-data">{data}</div>
-                        </motion.div>
-                      ))}
+                            <div className="fragment-data">{data}</div>
+                          </motion.div>
+                        );
+                      })}
                     </motion.div>
                   </motion.div>
                 )}
@@ -441,16 +459,18 @@ function App(): React.JSX.Element {
                   </button>
                   <div className="form-header-text">
                     <h2>Recover Seed Phrase</h2>
-                    <p>Provide any 2 of 3 fragments</p>
+                    <p>
+                      {decryptHook.fragmentHint
+                        ? `Provide any ${decryptHook.fragmentHint.threshold} of ${decryptHook.fragmentHint.total} fragments`
+                        : "Provide your fragments"}
+                    </p>
                   </div>
                 </div>
 
                 {!decryptHook.decryptResult && (
                   <motion.div {...fadeIn}>
                     <div className="field">
-                      <label className="field-label">
-                        Fragments (any 2 of 3)
-                      </label>
+                      <label className="field-label">Fragments</label>
                       <div className="fragments-input-group">
                         {decryptHook.fragments.map((frag, i) => (
                           <div className="fragment-input-row" key={i}>
@@ -465,9 +485,36 @@ function App(): React.JSX.Element {
                               placeholder={`Paste fragment ${i + 1}...`}
                               rows={2}
                             />
+                            {decryptHook.fragments.length > 2 && (
+                              <button
+                                className="remove-fragment-button"
+                                onClick={() => decryptHook.removeFragment(i)}
+                                aria-label="Remove fragment"
+                              >
+                                ×
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
+                      {decryptHook.canAddMore && (
+                        <button
+                          className="add-fragment-button"
+                          onClick={decryptHook.addFragment}
+                        >
+                          + Add fragment
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="field">
+                      <label className="field-label">Passphrase <span className="field-hint">(leave empty for community mode)</span></label>
+                      <input
+                        type="password"
+                        value={decryptHook.passphrase}
+                        onChange={(e) => decryptHook.setPassphrase(e.target.value)}
+                        placeholder="Enter passphrase if seed was encrypted with one..."
+                      />
                     </div>
 
                     <div className="field">
