@@ -145,6 +145,7 @@ function App(): React.JSX.Element {
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
 
   const { state, refresh } = useStore();
+  const isFree = state?.tier !== "guardian";
   const encryptHook = useEncrypt(refresh);
   const handleDecryptClear = useCallback(() => setMode(null), []);
   const decryptHook = useDecrypt(handleDecryptClear);
@@ -296,6 +297,18 @@ function App(): React.JSX.Element {
 
                 {!encryptHook.encryptResult && (
                   <motion.div {...fadeIn}>
+                    <div className="field">
+                      <label className="field-label">Passphrase</label>
+                      <input
+                        disabled={isFree}
+                        value={encryptHook.passphrase}
+                        onChange={(e) =>
+                          encryptHook.setPassphrase(e.target.value)
+                        }
+                        placeholder="Enter your passphrase to use encryption AES-256-GCM."
+                        type="password"
+                      />
+                    </div>
                     <div className="field">
                       <label className="field-label">Seed Phrase</label>
                       <textarea
@@ -501,6 +514,18 @@ function App(): React.JSX.Element {
                         value={decryptHook.passphrase}
                         onChange={(e) => decryptHook.setPassphrase(e.target.value)}
                         placeholder="Enter passphrase if seed was encrypted with one..."
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label className="field-label">Passphrase</label>
+                      <input
+                        value={decryptHook.passphrase}
+                        onChange={(e) =>
+                          decryptHook.setPassphrase(e.target.value)
+                        }
+                        placeholder="Enter your passphrase to recover."
+                        type="password"
                       />
                     </div>
 
