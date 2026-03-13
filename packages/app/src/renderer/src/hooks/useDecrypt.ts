@@ -18,6 +18,7 @@ function parseFragmentMeta(raw: string): { threshold?: number; total?: number } 
 
 export function useDecrypt(onClear?: () => void) {
   const [fragments, setFragments] = useState(["", ""]);
+  const [passphrase, setPassphrase] = useState("");
   const [decryptResult, setDecryptResult] = useState<string | null>(null);
   const [seedVisible, setSeedVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,9 +68,12 @@ export function useDecrypt(onClear?: () => void) {
   const handleDecrypt = async (): Promise<void> => {
     setError(null);
     setLoading(true);
+    const passphraseSnapshot = passphrase.trim() || undefined;
+    setPassphrase("");
     try {
       const recovered = await window.kyte.decrypt(
         fragments.filter((f) => f.trim() !== ""),
+        passphraseSnapshot,
       );
       setDecryptResult(recovered);
     } catch (err) {
@@ -83,18 +87,22 @@ export function useDecrypt(onClear?: () => void) {
 
   const reset = (): void => {
     setFragments(["", ""]);
+    setPassphrase("");
     setDecryptResult(null);
     setSeedVisible(false);
     setError(null);
   };
 
   const filledCount = fragments.filter((f) => f.trim() !== "").length;
-  const requiredThreshold = fragmentHint?.threshold ?? 2;
+  const rawThreshold = fragmentHint?.threshold ?? 2;
+  const requiredThreshold = Math.max(2, Math.min(rawThreshold, MAX_FRAGMENTS));
   const canSubmit = filledCount >= requiredThreshold;
   const canAddMore = fragments.length < MAX_FRAGMENTS;
 
   return {
     fragments,
+    passphrase,
+    setPassphrase,
     updateFragment,
     addFragment,
     removeFragment,

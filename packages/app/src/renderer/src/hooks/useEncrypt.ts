@@ -14,8 +14,10 @@ export function useEncrypt(refresh: () => Promise<void>) {
   const handleEncrypt = async (): Promise<void> => {
     setError(null);
     setLoading(true);
+    const seedSnapshot = seed;
+    setSeed("");
     try {
-      const result = await window.kyte.encrypt(seed, undefined, { totalFragments, threshold });
+      const result = await window.kyte.encrypt(seedSnapshot, undefined, { totalFragments, threshold });
       setEncryptResult(result);
       await refresh();
     } catch (err) {

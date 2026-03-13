@@ -182,8 +182,8 @@ function App(): React.JSX.Element {
           <span
             className="status-dot"
             style={
-              state?.tier === "guardian"
-                ? { background: "var(--accent)" }
+              state?.encryption_count === 0
+                ? { background: "var(--error)" }
                 : undefined
             }
           />
@@ -492,6 +492,16 @@ function App(): React.JSX.Element {
                           + Add fragment
                         </button>
                       )}
+                    </div>
+
+                    <div className="field">
+                      <label className="field-label">Passphrase <span className="field-hint">(leave empty for community mode)</span></label>
+                      <input
+                        type="password"
+                        value={decryptHook.passphrase}
+                        onChange={(e) => decryptHook.setPassphrase(e.target.value)}
+                        placeholder="Enter passphrase if seed was encrypted with one..."
+                      />
                     </div>
 
                     <button

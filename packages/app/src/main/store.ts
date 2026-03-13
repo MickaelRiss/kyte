@@ -3,7 +3,7 @@ import { is } from "@electron-toolkit/utils";
 import fs from "node:fs";
 import path from "node:path";
 import { StoreState } from "../types/store.js";
-import { FREE_ENCRYPTION_QUOTA } from "../constants.js";
+import { FREE_ENCRYPTION_QUOTA, GUARDIAN_ENCRYPTION_QUOTA } from "../constants.js";
 
 export type { StoreState };
 
@@ -15,7 +15,6 @@ export interface StoreSchema {
   licence_key_encrypted: string | null; // base64(safeStorage.encryptString(key))
 }
 
-const MAX_ENCRYPTION_COUNT = 10;
 
 const FREE_DEFAULTS: StoreSchema = {
   tier: "free",
@@ -24,11 +23,11 @@ const FREE_DEFAULTS: StoreSchema = {
   licence_key_encrypted: null,
 };
 
-// In dev mode, start as Guardian so all features are accessible
+// In dev mode, start as a Free user with one encryption credit to exercise the quota flow
 const DEV_DEFAULTS: StoreSchema = {
-  tier: "guardian",
+  tier: "free",
   status: "live",
-  encryption_count: MAX_ENCRYPTION_COUNT,
+  encryption_count: FREE_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
 };
 
@@ -81,7 +80,7 @@ export class StoreService {
       typeof parsed.encryption_count !== "number" ||
       !Number.isInteger(parsed.encryption_count) ||
       parsed.encryption_count < 0 ||
-      parsed.encryption_count > MAX_ENCRYPTION_COUNT ||
+      parsed.encryption_count > GUARDIAN_ENCRYPTION_QUOTA ||
       (parsed.licence_key_encrypted !== null &&
         typeof parsed.licence_key_encrypted !== "string")
     ) {
@@ -118,7 +117,7 @@ export class StoreService {
       const data: StoreSchema = {
         tier: "guardian",
         status: "live",
-        encryption_count: MAX_ENCRYPTION_COUNT,
+        encryption_count: GUARDIAN_ENCRYPTION_QUOTA,
         licence_key_encrypted: safeStorage
           .encryptString(licenceKey)
           .toString("base64"),

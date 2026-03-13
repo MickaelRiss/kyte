@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { SeedValidator } from "../utils/validator.js";
 import { AESEncryption, EncryptedSeed } from "./encryption.js";
 import { ShamirSecret } from "./shamir.js";
@@ -47,20 +47,16 @@ export class SeedManager {
       threshold,
     );
 
-    // Generate one integrity key per backup set to detect per-share corruption/tampering
-    const integrityKey = randomBytes(32).toString("hex");
+    // Generate a non-secret backup ID to detect fragments from different backups
+    const backupId = randomBytes(16).toString("hex");
 
     const fragments = shamirResult.fragments.map((fragment, index) => {
-      const mac = createHmac("sha256", integrityKey)
-        .update(`${index + 1}:${fragment}`)
-        .digest("hex");
       return JSON.stringify({
         i: index + 1,
         data: fragment,
         threshold: shamirResult.threshold,
         total: shamirResult.total,
-        ik: integrityKey,
-        mac,
+        bid: backupId,
       });
     });
 
@@ -81,8 +77,7 @@ export class SeedManager {
           i: parsed.i as number,
           hex: parsed.data as string,
           threshold: parsed.threshold as number,
-          ik: typeof parsed.ik === "string" ? parsed.ik : undefined,
-          mac: typeof parsed.mac === "string" ? parsed.mac : undefined,
+          bid: typeof parsed.bid === "string" ? parsed.bid : undefined,
         };
       } catch {
         throw new Error(
@@ -99,28 +94,12 @@ export class SeedManager {
       );
     }
 
-    // Verify all fragments share the same integrity key (catches mixing fragments from different backups)
-    const iks = new Set(parsedFragments.map((f) => f.ik).filter((ik): ik is string => ik !== undefined));
-    if (iks.size > 1) {
+    // Verify all fragments share the same backup ID (catches mixing fragments from different backups)
+    const bids = new Set(parsedFragments.map((f) => f.bid).filter((bid): bid is string => bid !== undefined));
+    if (bids.size > 1) {
       throw new Error(
         "Fragments are from different backups. Make sure all fragments are from the same backup.",
       );
-    }
-
-    // Verify per-fragment HMAC integrity (new format; legacy fragments without mac are skipped)
-    for (const parsed of parsedFragments) {
-      if (parsed.ik !== undefined && parsed.mac !== undefined) {
-        const expectedHex = createHmac("sha256", parsed.ik)
-          .update(`${parsed.i}:${parsed.hex}`)
-          .digest("hex");
-        const expectedBuf = Buffer.from(expectedHex, "hex");
-        const actualBuf = Buffer.from(parsed.mac, "hex");
-        if (expectedBuf.length !== actualBuf.length || !timingSafeEqual(expectedBuf, actualBuf)) {
-          throw new Error(
-            `Fragment ${parsed.i} integrity check failed. It may be corrupted or tampered with.`,
-          );
-        }
-      }
     }
 
     const threshold = parsedFragments[0].threshold;

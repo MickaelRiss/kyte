@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
-import { SeedManager, generateQR } from "kyte-core";
+import { SeedManager, SeedValidator, generateQR } from "kyte-core";
 import { StoreService } from "./store";
 import { MAX_FRAGMENTS, MAX_FRAGMENT_LENGTH } from "../constants.js";
 
@@ -52,6 +52,11 @@ app.whenReady().then(() => {
         throw new Error("Invalid passphrase.");
       }
 
+      const normalizedSeed = SeedValidator.normalizeSeed(seed as string);
+      if (!SeedValidator.validateSeed(normalizedSeed)) {
+        throw new Error("Invalid BIP39 seed phrase.");
+      }
+
       const state = storeService.tryConsumeEncryption();
       if (!state) {
         throw new Error(
@@ -65,7 +70,7 @@ app.whenReady().then(() => {
       const threshold = isGuardian ? toSafeInt(opts.threshold, 2, 2, totalFragments) : 2;
 
       const fragments = await SeedManager.secureSeed({
-        seed,
+        seed: normalizedSeed,
         passphrase: passphrase as string | undefined,
         totalFragments,
         threshold,
