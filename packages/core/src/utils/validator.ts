@@ -9,7 +9,4 @@ export class SeedValidator {
     return seed.trim().toLowerCase();
   }
 
-  static countSeedWord(seed: string): number {
-    return this.normalizeSeed(seed).split(/\s+/).length;
-  }
 }

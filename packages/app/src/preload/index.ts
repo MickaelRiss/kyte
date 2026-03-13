@@ -12,6 +12,9 @@ const kyteAPI = {
 
   decrypt: (fragments: string[], passphrase?: string): Promise<string> =>
     ipcRenderer.invoke("seed:decrypt", fragments, passphrase),
+
+  testGuardianAlert: (botToken: string, chatId: string): Promise<void> =>
+    ipcRenderer.invoke("guardian:test-alert", botToken, chatId),
 };
 
 const store = {

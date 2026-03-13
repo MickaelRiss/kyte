@@ -130,7 +130,11 @@ const DEFAULT_FRAGMENT_META = [
   { dest: "Cloud backup" },
 ];
 
-function getFragmentMeta(index: number): { label: string; tag: string; dest: string } {
+function getFragmentMeta(index: number): {
+  label: string;
+  tag: string;
+  dest: string;
+} {
   const label = String.fromCharCode(65 + index); // A, B, C, D, ...
   const preset = DEFAULT_FRAGMENT_META[index];
   return {
@@ -143,6 +147,10 @@ function getFragmentMeta(index: number): { label: string; tag: string; dest: str
 function App(): React.JSX.Element {
   const [mode, setMode] = useState<"encrypt" | "decrypt" | null>(null);
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
+  const [testAlertState, setTestAlertState] = useState<
+    "idle" | "sending" | "ok" | "error"
+  >("idle");
+  const [testAlertError, setTestAlertError] = useState<string | null>(null);
 
   const { state, refresh } = useStore();
   const isFree = state?.tier !== "guardian";
@@ -165,8 +173,17 @@ function App(): React.JSX.Element {
     return () => clearTimeout(timeout);
   }, [copiedTag]);
 
+  useEffect(() => {
+    if (testAlertState !== "ok" && testAlertState !== "error") return;
+    const delay = testAlertState === "ok" ? 3000 : 5000;
+    const timeout = setTimeout(() => setTestAlertState("idle"), delay);
+    return () => clearTimeout(timeout);
+  }, [testAlertState]);
+
   const reset = (): void => {
     setMode(null);
+    setTestAlertState("idle");
+    setTestAlertError(null);
     encryptHook.reset();
     decryptHook.reset();
   };
@@ -337,36 +354,174 @@ function App(): React.JSX.Element {
                                   encryptHook.setThreshold(n);
                                 }
                               }}
-                            >−</button>
-                            <span className="stepper-value">{encryptHook.totalFragments}</span>
+                            >
+                              −
+                            </button>
+                            <span className="stepper-value">
+                              {encryptHook.totalFragments}
+                            </span>
                             <button
                               className="stepper-btn"
                               disabled={encryptHook.totalFragments >= 10}
-                              onClick={() => encryptHook.setTotalFragments(encryptHook.totalFragments + 1)}
-                            >+</button>
+                              onClick={() =>
+                                encryptHook.setTotalFragments(
+                                  encryptHook.totalFragments + 1,
+                                )
+                              }
+                            >
+                              +
+                            </button>
                           </div>
                         </div>
                         <div className="field">
                           <label className="field-label">
                             Minimum to recover
-                            <span className="field-hint"> (2–{encryptHook.totalFragments})</span>
+                            <span className="field-hint">
+                              {" "}
+                              (2–{encryptHook.totalFragments})
+                            </span>
                           </label>
                           <div className="stepper">
                             <button
                               className="stepper-btn"
                               disabled={encryptHook.threshold <= 2}
-                              onClick={() => encryptHook.setThreshold(encryptHook.threshold - 1)}
-                            >−</button>
-                            <span className="stepper-value">{encryptHook.threshold}</span>
+                              onClick={() =>
+                                encryptHook.setThreshold(
+                                  encryptHook.threshold - 1,
+                                )
+                              }
+                            >
+                              −
+                            </button>
+                            <span className="stepper-value">
+                              {encryptHook.threshold}
+                            </span>
                             <button
                               className="stepper-btn"
-                              disabled={encryptHook.threshold >= encryptHook.totalFragments}
-                              onClick={() => encryptHook.setThreshold(encryptHook.threshold + 1)}
-                            >+</button>
+                              disabled={
+                                encryptHook.threshold >=
+                                encryptHook.totalFragments
+                              }
+                              onClick={() =>
+                                encryptHook.setThreshold(
+                                  encryptHook.threshold + 1,
+                                )
+                              }
+                            >
+                              +
+                            </button>
                           </div>
                         </div>
                       </div>
                     )}
+
+                    <div className="guardian-alert-controls">
+                      <label
+                        className={`toggle-label${isFree ? " toggle-disabled" : ""}`}
+                      >
+                        <span className="toggle-switch">
+                          <input
+                            type="checkbox"
+                            id="checkbox-telegram"
+                            disabled={isFree}
+                            checked={encryptHook.guardianAlertEnabled}
+                            onChange={(e) =>
+                              encryptHook.setGuardianAlertEnabled(
+                                e.target.checked,
+                              )
+                            }
+                          />
+                          <span className="toggle-track" />
+                        </span>
+                        <span>Enable Telegram notification on recovery</span>
+                      </label>
+                      {encryptHook.guardianAlertEnabled && (
+                        <>
+                          <div className="field">
+                            <label className="field-label">
+                              Bot Token
+                              <span
+                                className="field-hint"
+                                title="The bot token only grants send-only access to one chat. It will be embedded in your fragments."
+                              >
+                                {" "}
+                                ⓘ
+                              </span>
+                            </label>
+                            <input
+                              type="password"
+                              value={encryptHook.botToken}
+                              onChange={(e) =>
+                                encryptHook.setBotToken(e.target.value)
+                              }
+                              placeholder="123456:ABCdef..."
+                            />
+                          </div>
+                          <div className="field">
+                            <label className="field-label">Chat ID</label>
+                            <input
+                              type="text"
+                              value={encryptHook.chatId}
+                              onChange={(e) =>
+                                encryptHook.setChatId(e.target.value)
+                              }
+                              placeholder="-1001234567890"
+                            />
+                          </div>
+                          <div className="test-alert-row">
+                            <button
+                              className={`test-alert-button${testAlertState === "sending" ? " test-alert-sending" : ""}${testAlertState === "ok" ? " test-alert-success" : ""}`}
+                              disabled={
+                                testAlertState === "sending" ||
+                                !encryptHook.botToken.trim() ||
+                                !encryptHook.chatId.trim()
+                              }
+                              onClick={async () => {
+                                setTestAlertState("sending");
+                                setTestAlertError(null);
+                                try {
+                                  await window.kyte.testGuardianAlert(
+                                    encryptHook.botToken.trim(),
+                                    encryptHook.chatId.trim(),
+                                  );
+                                  setTestAlertState("ok");
+                                } catch (err) {
+                                  setTestAlertError(
+                                    err instanceof Error
+                                      ? err.message
+                                      : "Test failed",
+                                  );
+                                  setTestAlertState("error");
+                                }
+                              }}
+                            >
+                              <span className="test-alert-content">
+                                {testAlertState === "sending" && (
+                                  <span className="test-alert-spinner" />
+                                )}
+                                {testAlertState === "ok" && (
+                                  <svg className="test-alert-check" viewBox="0 0 16 16" width="14" height="14">
+                                    <path d="M3 8.5L6.5 12L13 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                )}
+                                <span>
+                                  {testAlertState === "sending"
+                                    ? "Sending..."
+                                    : testAlertState === "ok"
+                                      ? "Sent!"
+                                      : "Send test notification"}
+                                </span>
+                              </span>
+                            </button>
+                            {testAlertState === "error" && (
+                              <span className="test-alert-status test-alert-error">
+                                {testAlertError}
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
 
                     <button
                       className="submit-button"
@@ -417,7 +572,9 @@ function App(): React.JSX.Element {
                             <div className="fragment-card-header">
                               <span className="fragment-tag">{meta.tag}</span>
                               <div className="fragment-card-actions">
-                                <span className="fragment-dest">{meta.dest}</span>
+                                <span className="fragment-dest">
+                                  {meta.dest}
+                                </span>
                                 <button
                                   className="copy-button"
                                   onClick={() => downloadDataUrl(qr, filename)}
@@ -427,7 +584,9 @@ function App(): React.JSX.Element {
                                 </button>
                                 <button
                                   className="copy-button"
-                                  onClick={() => copyToClipboard(data, meta.tag)}
+                                  onClick={() =>
+                                    copyToClipboard(data, meta.tag)
+                                  }
                                 >
                                   {copiedTag === meta.tag ? (
                                     <CheckIcon />
@@ -508,13 +667,19 @@ function App(): React.JSX.Element {
                     </div>
 
                     <div className="field">
-                      <label className="field-label">Passphrase <span className="field-hint">(leave empty if no passphrase was used)</span></label>
+                      <label className="field-label">
+                        Passphrase{" "}
+                        <span className="field-hint">
+                          (leave empty if no passphrase was used)
+                        </span>
+                      </label>
                       <input
                         type="password"
-                        disabled={isFree}
                         value={decryptHook.passphrase}
-                        onChange={(e) => decryptHook.setPassphrase(e.target.value)}
-                        placeholder="Enter passphrase if seed was encrypted with one..."
+                        onChange={(e) =>
+                          decryptHook.setPassphrase(e.target.value)
+                        }
+                        placeholder="Enter passphrase if seed was encrypted with one"
                       />
                     </div>
 

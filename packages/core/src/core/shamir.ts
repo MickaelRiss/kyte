@@ -66,7 +66,6 @@ export class ShamirSecret {
 
     const sharesUint8 = fragmentsHex.map((hex) => this.hexToUint8Array(hex));
     const reconstructed = await combine(sharesUint8);
-    const seedEncypted = this.fromUint8Array(reconstructed);
-    return seedEncypted;
+    return this.fromUint8Array(reconstructed);
   }
 }
