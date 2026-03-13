@@ -3,7 +3,10 @@ import { is } from "@electron-toolkit/utils";
 import fs from "node:fs";
 import path from "node:path";
 import { StoreState } from "../types/store.js";
-import { FREE_ENCRYPTION_QUOTA, GUARDIAN_ENCRYPTION_QUOTA } from "../constants.js";
+import {
+  FREE_ENCRYPTION_QUOTA,
+  GUARDIAN_ENCRYPTION_QUOTA,
+} from "../constants.js";
 
 export type { StoreState };
 
@@ -15,7 +18,6 @@ export interface StoreSchema {
   licence_key_encrypted: string | null; // base64(safeStorage.encryptString(key))
 }
 
-
 const FREE_DEFAULTS: StoreSchema = {
   tier: "free",
   status: null,
@@ -25,9 +27,9 @@ const FREE_DEFAULTS: StoreSchema = {
 
 // In dev mode, start as a Free user with one encryption credit to exercise the quota flow
 const DEV_DEFAULTS: StoreSchema = {
-  tier: "free",
+  tier: "guardian",
   status: "live",
-  encryption_count: FREE_ENCRYPTION_QUOTA,
+  encryption_count: GUARDIAN_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
 };
 

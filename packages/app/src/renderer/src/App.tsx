@@ -508,24 +508,13 @@ function App(): React.JSX.Element {
                     </div>
 
                     <div className="field">
-                      <label className="field-label">Passphrase <span className="field-hint">(leave empty for community mode)</span></label>
+                      <label className="field-label">Passphrase <span className="field-hint">(leave empty if no passphrase was used)</span></label>
                       <input
                         type="password"
+                        disabled={isFree}
                         value={decryptHook.passphrase}
                         onChange={(e) => decryptHook.setPassphrase(e.target.value)}
                         placeholder="Enter passphrase if seed was encrypted with one..."
-                      />
-                    </div>
-
-                    <div className="field">
-                      <label className="field-label">Passphrase</label>
-                      <input
-                        value={decryptHook.passphrase}
-                        onChange={(e) =>
-                          decryptHook.setPassphrase(e.target.value)
-                        }
-                        placeholder="Enter your passphrase to recover."
-                        type="password"
                       />
                     </div>
 
