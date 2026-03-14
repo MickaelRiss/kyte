@@ -84,25 +84,28 @@ function fetchFromIpApiCo(): Promise<LocationInfo> {
   });
 }
 
-function fetchFromIpWhoIs(): Promise<LocationInfo> {
-  return fetchGeoProvider("https://ipwho.is/", "ipwho.is", (data) => {
-    if (!data.city || !data.country) return null;
-    const connection = data.connection as Record<string, unknown> | undefined;
-    return {
-      city: data.city as string,
-      region: (data.region as string) ?? "",
-      country: data.country as string,
-      isp: (connection?.isp as string) ?? "",
-      lat: toFiniteNumber(data.latitude, 0),
-      lon: toFiniteNumber(data.longitude, 0),
-    };
-  });
+function fetchFromIpApi(): Promise<LocationInfo> {
+  return fetchGeoProvider(
+    "http://ip-api.com/json/?fields=city,regionName,country,isp,lat,lon",
+    "ip-api.com",
+    (data) => {
+      if (!data.city || !data.country) return null;
+      return {
+        city: data.city as string,
+        region: (data.regionName as string) ?? "",
+        country: data.country as string,
+        isp: (data.isp as string) ?? "",
+        lat: toFiniteNumber(data.lat, 0),
+        lon: toFiniteNumber(data.lon, 0),
+      };
+    },
+  );
 }
 
 async function fetchGeoLocation(): Promise<LocationInfo> {
   const primary = await fetchFromIpApiCo();
   if (primary) return primary;
-  return fetchFromIpWhoIs();
+  return fetchFromIpApi();
 }
 
 function toFiniteNumber(v: unknown, fallback: number): number {
