@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { electronAPI } from "@electron-toolkit/preload";
 import { StoreState } from "../types/store";
 
 const kyteAPI = {
@@ -33,7 +32,6 @@ const store = {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("store", store);
-    contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("kyte", kyteAPI);
   } catch (error) {
     console.error("Failed to expose APIs:", error);

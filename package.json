@@ -15,7 +15,7 @@
     "build:core": "pnpm --filter kyte-core build",
     "build:app": "pnpm --filter kyte-app build",
     "dev": "pnpm --filter kyte-app dev",
-    "test": "pnpm --filter kyte-core test",
+    "test": "pnpm --filter kyte-core test && pnpm --filter kyte-app test",
     "test:watch": "pnpm --filter kyte-core test:watch",
     "package": "pnpm build:core && pnpm --filter kyte-app package"
   },

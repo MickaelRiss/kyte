@@ -6,6 +6,7 @@ import { StoreService, type GuardianAlertConfig } from "./store";
 import { MAX_FRAGMENTS, MAX_FRAGMENT_LENGTH } from "../constants.js";
 
 const ALLOWED_EXTERNAL_URL = "https://kyte-beryl.vercel.app/";
+const LICENCE_VERIFY_URL = "https://kyte-beryl.vercel.app/api/verify-licence";
 const TELEGRAM_TOKEN_RE = /^\d{5,16}:[A-Za-z0-9_-]{35}$/;
 const TELEGRAM_CHAT_ID_RE = /^-?\d{1,20}$/;
 
@@ -17,17 +18,25 @@ function isValidChatId(v: unknown): v is string {
   return typeof v === "string" && TELEGRAM_CHAT_ID_RE.test(v);
 }
 
-function toSafeInt(value: unknown, fallback: number, min: number, max: number): number {
+function toSafeInt(
+  value: unknown,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
   const n = Number(value);
   if (!Number.isInteger(n) || n < min || n > max) return fallback;
   return n;
 }
 
-function toGuardianAlert(opts: Record<string, unknown>): GuardianAlertConfig | undefined {
+function toGuardianAlert(
+  opts: Record<string, unknown>,
+): GuardianAlertConfig | undefined {
   const { guardianAlert } = opts;
   if (!guardianAlert || typeof guardianAlert !== "object") return undefined;
   const ga = guardianAlert as Record<string, unknown>;
-  if (!isValidBotToken(ga.botToken) || !isValidChatId(ga.chatId)) return undefined;
+  if (!isValidBotToken(ga.botToken) || !isValidChatId(ga.chatId))
+    return undefined;
   return { botToken: ga.botToken, chatId: ga.chatId };
 }
 
@@ -53,13 +62,18 @@ async function fetchGeoProvider(
       headers: { "User-Agent": "Kyte/1.0" },
     });
     if (!response.ok) {
-      console.error(`Geolocation API (${label}) error: HTTP ${response.status}`);
+      console.error(
+        `Geolocation API (${label}) error: HTTP ${response.status}`,
+      );
       return null;
     }
     const data = (await response.json()) as Record<string, unknown>;
     const result = mapper(data);
     if (!result) {
-      console.error(`Geolocation API (${label}) returned incomplete data:`, JSON.stringify(data));
+      console.error(
+        `Geolocation API (${label}) returned incomplete data:`,
+        JSON.stringify(data),
+      );
     }
     return result;
   } catch (err) {
@@ -84,28 +98,8 @@ function fetchFromIpApiCo(): Promise<LocationInfo> {
   });
 }
 
-function fetchFromIpApi(): Promise<LocationInfo> {
-  return fetchGeoProvider(
-    "http://ip-api.com/json/?fields=city,regionName,country,isp,lat,lon",
-    "ip-api.com",
-    (data) => {
-      if (!data.city || !data.country) return null;
-      return {
-        city: data.city as string,
-        region: (data.regionName as string) ?? "",
-        country: data.country as string,
-        isp: (data.isp as string) ?? "",
-        lat: toFiniteNumber(data.lat, 0),
-        lon: toFiniteNumber(data.lon, 0),
-      };
-    },
-  );
-}
-
 async function fetchGeoLocation(): Promise<LocationInfo> {
-  const primary = await fetchFromIpApiCo();
-  if (primary) return primary;
-  return fetchFromIpApi();
+  return fetchFromIpApiCo();
 }
 
 function toFiniteNumber(v: unknown, fallback: number): number {
@@ -114,7 +108,10 @@ function toFiniteNumber(v: unknown, fallback: number): number {
 }
 
 function sanitizeLocationField(s: string): string {
-  return s.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, 100);
+  return s
+    .replace(/[\x00-\x1F\x7F]/g, " ")
+    .trim()
+    .slice(0, 100);
 }
 
 function formatLocation(location: LocationInfo): string {
@@ -128,24 +125,35 @@ function formatLocation(location: LocationInfo): string {
   return `Approximate location (based on IP address):\n   ${city}, ${region}, ${country}\n🌐 ISP: ${isp}\n🗺 https://maps.google.com/?q=${lat},${lon}`;
 }
 
-async function sendTelegramMessage(botToken: string, chatId: string, text: string): Promise<void> {
-  const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  });
+async function sendTelegramMessage(
+  botToken: string,
+  chatId: string,
+  text: string,
+): Promise<void> {
+  const response = await fetch(
+    `https://api.telegram.org/bot${botToken}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text }),
+    },
+  );
   if (!response.ok) {
     const data = (await response.json()) as { description?: string };
     throw new Error(data.description ?? "Telegram API error");
   }
 }
 
-function sendTelegramAlert(alert: GuardianAlertConfig, location: LocationInfo): void {
+function sendTelegramAlert(
+  alert: GuardianAlertConfig,
+  location: LocationInfo,
+): void {
   const locationStr = formatLocation(location);
   const timestamp = new Date().toUTCString();
   const message = `⚠️ Your seed phrase was recovered.\n📍 ${locationStr}\n🕐 ${timestamp}\n\n⚠️ This location is approximate and may reflect the ISP's routing center, not the exact device position.\n\nIf this wasn't you, contact me immediately.`;
-  sendTelegramMessage(alert.botToken, alert.chatId, message)
-    .catch((err) => console.error("Telegram alert failed:", err));
+  sendTelegramMessage(alert.botToken, alert.chatId, message).catch((err) =>
+    console.error("Telegram alert failed:", err),
+  );
 }
 
 function createWindow(): BrowserWindow {
@@ -172,18 +180,58 @@ function createWindow(): BrowserWindow {
 app.whenReady().then(() => {
   const storeService = new StoreService();
 
+  // Check stored licence validity on launch (local, instant)
+  const currentState = storeService.checkLicenceOnLaunch();
+
+  // Background refresh: ask server if subscription is still active
+  if (currentState.has_licence_key && currentState.tier === "guardian") {
+    (async () => {
+      try {
+        // Read the stored encrypted key to send to the server
+        const licenceKey = storeService.getDecryptedLicenceKey();
+        if (!licenceKey) return;
+
+        const response = await fetch(LICENCE_VERIFY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ licence_key: licenceKey }),
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!response.ok) {
+          // Server says subscription is no longer active
+          if (response.status === 403) {
+            storeService.revokeGuardian();
+            console.log("Licence expired server-side — downgraded to free");
+            // Notify all open windows so the renderer refreshes tier state
+            BrowserWindow.getAllWindows().forEach((w) =>
+              w.webContents.send("store:state-changed"),
+            );
+          }
+          return;
+        }
+
+        const data = (await response.json()) as { licence_key?: string };
+        if (data.licence_key && typeof data.licence_key === "string") {
+          storeService.refreshLicenceKey(data.licence_key);
+          console.log("Licence refreshed successfully");
+        }
+      } catch {
+        console.log("Licence refresh skipped (offline or server unreachable)");
+      }
+    })();
+  }
+
   ipcMain.handle(
     "seed:encrypt",
-    async (
-      _event,
-      seed: unknown,
-      passphrase?: unknown,
-      options?: unknown,
-    ) => {
+    async (_event, seed: unknown, passphrase?: unknown, options?: unknown) => {
       if (typeof seed !== "string" || seed.length === 0 || seed.length > 1024) {
         throw new Error("Invalid seed input.");
       }
-      if (passphrase !== undefined && (typeof passphrase !== "string" || passphrase.length > 1024)) {
+      if (
+        passphrase !== undefined &&
+        (typeof passphrase !== "string" || passphrase.length > 1024)
+      ) {
         throw new Error("Invalid passphrase.");
       }
 
@@ -199,10 +247,17 @@ app.whenReady().then(() => {
         );
       }
       const isGuardian = state.tier === "guardian" && state.status === "live";
-      const opts = options !== null && typeof options === "object" ? options as Record<string, unknown> : {};
+      const opts =
+        options !== null && typeof options === "object"
+          ? (options as Record<string, unknown>)
+          : {};
 
-      const totalFragments = isGuardian ? toSafeInt(opts.totalFragments, 3, 3, 10) : 3;
-      const threshold = isGuardian ? toSafeInt(opts.threshold, 2, 2, totalFragments) : 2;
+      const totalFragments = isGuardian
+        ? toSafeInt(opts.totalFragments, 3, 3, 10)
+        : 3;
+      const threshold = isGuardian
+        ? toSafeInt(opts.threshold, 2, 2, totalFragments)
+        : 2;
       const guardianAlert = isGuardian ? toGuardianAlert(opts) : undefined;
       storeService.setGuardianAlert(guardianAlert ?? null);
 
@@ -222,18 +277,32 @@ app.whenReady().then(() => {
   ipcMain.handle(
     "seed:decrypt",
     async (_event, fragments: unknown, passphrase?: unknown) => {
-      if (!Array.isArray(fragments) || fragments.length < 2 || fragments.length > MAX_FRAGMENTS) {
+      if (
+        !Array.isArray(fragments) ||
+        fragments.length < 2 ||
+        fragments.length > MAX_FRAGMENTS
+      ) {
         throw new Error("Invalid fragments input.");
       }
       for (const f of fragments) {
-        if (typeof f !== "string" || f.length === 0 || f.length > MAX_FRAGMENT_LENGTH) {
+        if (
+          typeof f !== "string" ||
+          f.length === 0 ||
+          f.length > MAX_FRAGMENT_LENGTH
+        ) {
           throw new Error("Invalid fragment value.");
         }
       }
-      if (passphrase !== undefined && (typeof passphrase !== "string" || passphrase.length > 1024)) {
+      if (
+        passphrase !== undefined &&
+        (typeof passphrase !== "string" || passphrase.length > 1024)
+      ) {
         throw new Error("Invalid passphrase.");
       }
-      const seed = await SeedManager.recoverSeed(fragments, passphrase as string | undefined);
+      const seed = await SeedManager.recoverSeed(
+        fragments,
+        passphrase as string | undefined,
+      );
 
       const state = storeService.getState();
       const alertConfig = storeService.getGuardianAlert();
@@ -247,30 +316,37 @@ app.whenReady().then(() => {
     },
   );
 
-  ipcMain.handle("guardian:test-alert", async (_event, botToken: unknown, chatId: unknown) => {
-    if (!isValidBotToken(botToken)) {
-      throw new Error("Invalid bot token.");
-    }
-    if (!isValidChatId(chatId)) {
-      throw new Error("Invalid chat ID.");
-    }
-    const state = storeService.getState();
-    if (state.tier !== "guardian" || state.status !== "live") {
-      throw new Error("Guardian plan required.");
-    }
-    const location = await fetchGeoLocation();
-    const locationStr = formatLocation(location);
-    const timestamp = new Date().toUTCString();
-    const message = `✅ Kyte Guardian Alert test successful.\n📍 ${locationStr}\n🕐 ${timestamp}\n\n⚠️ This location is approximate and may reflect the ISP's routing center, not the exact device position.\n\nYou will receive alerts like this when your seed is recovered.`;
-    await sendTelegramMessage(botToken, chatId, message);
-  });
+  ipcMain.handle(
+    "guardian:test-alert",
+    async (_event, botToken: unknown, chatId: unknown) => {
+      if (!isValidBotToken(botToken)) {
+        throw new Error("Invalid bot token.");
+      }
+      if (!isValidChatId(chatId)) {
+        throw new Error("Invalid chat ID.");
+      }
+      const state = storeService.getState();
+      if (state.tier !== "guardian" || state.status !== "live") {
+        throw new Error("Guardian plan required.");
+      }
+      const location = await fetchGeoLocation();
+      const locationStr = formatLocation(location);
+      const timestamp = new Date().toUTCString();
+      const message = `✅ Kyte Guardian Alert test successful.\n📍 ${locationStr}\n🕐 ${timestamp}\n\n⚠️ This location is approximate and may reflect the ISP's routing center, not the exact device position.\n\nYou will receive alerts like this when your seed is recovered.`;
+      await sendTelegramMessage(botToken, chatId, message);
+    },
+  );
 
   ipcMain.handle("store:get-state", () => {
     return storeService.getState();
   });
 
   ipcMain.handle("store:activate-guardian", (_event, licenceKey: unknown) => {
-    if (typeof licenceKey !== "string" || licenceKey.length === 0 || licenceKey.length > 512) {
+    if (
+      typeof licenceKey !== "string" ||
+      licenceKey.length === 0 ||
+      licenceKey.length > 512
+    ) {
       throw new Error("Invalid licence key.");
     }
     return storeService.activateGuardian(licenceKey);
