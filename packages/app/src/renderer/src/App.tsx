@@ -4,6 +4,7 @@ import logo from "./assets/logo.png";
 import { useEncrypt } from "./hooks/useEncrypt";
 import { useDecrypt } from "./hooks/useDecrypt";
 import { useStore } from "./hooks/useStore";
+import { extractIpcError } from "./utils/ipc";
 
 const ease: Easing = "easeOut";
 const COPIED_FEEDBACK_MS = 1500;
@@ -115,6 +116,125 @@ function DownloadIcon(): React.JSX.Element {
   );
 }
 
+function KeyIcon(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7.5" cy="15.5" r="3.5" />
+      <path d="M10.5 12.5L20 3" />
+      <path d="M18 5l2 2" />
+      <path d="M15 8l2 2" />
+    </svg>
+  );
+}
+
+function LicenceModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+}): React.JSX.Element {
+  const [key, setKey] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleActivate = async (): Promise<void> => {
+    if (!key.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await window.store.activateGuardian(key.trim());
+      setSuccess(true);
+      setTimeout(onSuccess, 1200);
+    } catch (err) {
+      setError(extractIpcError(err, "Activation failed"));
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      onClick={loading ? undefined : onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="modal-card"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 16 }}
+        transition={{ duration: 0.25, ease }}
+      >
+        <div className="modal-header">
+          <div className="modal-title">
+            <KeyIcon />
+            <span>Activate Guardian</span>
+          </div>
+          <button className="modal-close" onClick={onClose} disabled={loading}>
+            ×
+          </button>
+        </div>
+
+        {!success ? (
+          <>
+            <p className="modal-subtitle">
+              Enter your licence key to unlock Guardian features.
+            </p>
+            <div className="field">
+              <input
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                placeholder="XXXX.XXXX.XXXX"
+                disabled={loading}
+                onKeyDown={(e) => e.key === "Enter" && handleActivate()}
+                autoFocus
+              />
+            </div>
+            <AnimatePresence>
+              {error && (
+                <motion.div className="message message-error" {...fadeIn}>
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div className="modal-actions">
+              <button
+                className="modal-cancel"
+                onClick={onClose}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-activate"
+                onClick={handleActivate}
+                disabled={loading || !key.trim()}
+              >
+                {loading ? <span className="spinner" /> : "Activate"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <motion.div className="modal-success" {...fadeIn}>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
+              stroke="var(--success)" strokeWidth="2"
+              strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Guardian activated!</span>
+          </motion.div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function downloadDataUrl(dataUrl: string, filename: string): void {
   const link = document.createElement("a");
   link.href = dataUrl;
@@ -151,6 +271,7 @@ function App(): React.JSX.Element {
     "idle" | "sending" | "ok" | "error"
   >("idle");
   const [testAlertError, setTestAlertError] = useState<string | null>(null);
+  const [showLicenceModal, setShowLicenceModal] = useState(false);
 
   const { state, refresh } = useStore();
   const isFree = state?.tier !== "guardian";
@@ -282,16 +403,26 @@ function App(): React.JSX.Element {
                       With Guardian, one password reveals your seed. The other
                       shows a decoy and silently alerts your emergency contacts.
                     </div>
-                    <button
-                      className="guardian-banner-link"
-                      onClick={() =>
-                        window.store.openExternal(
-                          "https://kyte-beryl.vercel.app/",
-                        )
-                      }
-                    >
-                      Discover Guardian →
-                    </button>
+                    <div className="guardian-banner-actions">
+                      <button
+                        className="guardian-cta-secondary"
+                        onClick={() => setShowLicenceModal(true)}
+                      >
+                        <KeyIcon />
+                        I have a key
+                      </button>
+                      <button
+                        className="guardian-cta-primary"
+                        onClick={() =>
+                          window.store.openExternal(
+                            "https://kyte-beryl.vercel.app/",
+                          )
+                        }
+                      >
+                        Discover Guardian
+                        <span>→</span>
+                      </button>
+                    </div>
                   </motion.div>
                 )}
               </motion.div>
@@ -780,6 +911,18 @@ function App(): React.JSX.Element {
           Split to protect. Distributed to last. Never lose access again.
         </span>
       </div>
+
+      <AnimatePresence>
+        {showLicenceModal && (
+          <LicenceModal
+            onClose={() => setShowLicenceModal(false)}
+            onSuccess={() => {
+              refresh();
+              setShowLicenceModal(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

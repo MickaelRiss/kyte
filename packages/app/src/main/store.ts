@@ -7,6 +7,7 @@ import {
   FREE_ENCRYPTION_QUOTA,
   GUARDIAN_ENCRYPTION_QUOTA,
 } from "../constants.js";
+import { validateLicenceKey } from "./licence.js";
 
 export type { StoreState };
 
@@ -34,9 +35,9 @@ const FREE_DEFAULTS: StoreSchema = {
 
 // In dev mode, start as a Free user with one encryption credit to exercise the quota flow
 const DEV_DEFAULTS: StoreSchema = {
-  tier: "guardian",
+  tier: "free",
   status: "live",
-  encryption_count: GUARDIAN_ENCRYPTION_QUOTA,
+  encryption_count: FREE_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
   guardian_alert: null,
 };
@@ -56,6 +57,56 @@ export class StoreService {
       console.error("Store missing or corrupted, resetting to defaults", error);
       this.write(INITIAL_DEFAULTS);
     }
+  }
+
+  checkLicenceOnLaunch(): StoreState {
+    const data = this.read();
+
+    // No licence stored — nothing to check
+    if (!data.licence_key_encrypted) {
+      return this.toState(data);
+    }
+
+    // Decrypt and validate the stored licence key
+    try {
+      validateLicenceKey(this.decryptLicenceKeyString(data.licence_key_encrypted));
+      return this.toState(data);
+    } catch {
+      // Licence is invalid or expired — downgrade to free
+      data.tier = "free";
+      data.status = "expired";
+      data.encryption_count = FREE_ENCRYPTION_QUOTA;
+      this.write(data);
+      return this.toState(data);
+    }
+  }
+
+  refreshLicenceKey(newLicenceKey: string): StoreState {
+    // Validate the new key before storing it
+    validateLicenceKey(newLicenceKey);
+
+    const data = this.read();
+    data.licence_key_encrypted = safeStorage
+      .encryptString(newLicenceKey)
+      .toString("base64");
+    data.tier = "guardian";
+    data.status = "live";
+    this.write(data);
+    return this.toState(data);
+  }
+
+  getDecryptedLicenceKey(): string | null {
+    const data = this.read();
+    if (!data.licence_key_encrypted) return null;
+    try {
+      return this.decryptLicenceKeyString(data.licence_key_encrypted);
+    } catch {
+      return null;
+    }
+  }
+
+  private decryptLicenceKeyString(encrypted: string): string {
+    return safeStorage.decryptString(Buffer.from(encrypted, "base64"));
   }
 
   // Only place where we touch the hard drive to SAVE
@@ -140,6 +191,12 @@ export class StoreService {
   }
 
   activateGuardian(licenceKey: string): StoreState {
+    // Step 1: Validate the licence key BEFORE doing anything
+    // This will throw if the key is invalid, expired, or forged
+    // fragment_limit is validated but not used — all Guardian activations receive
+    // the fixed GUARDIAN_ENCRYPTION_QUOTA regardless of the licence's fragment_limit field.
+    validateLicenceKey(licenceKey);
+
     try {
       const existing = (() => {
         try {
@@ -148,6 +205,7 @@ export class StoreService {
           return null;
         }
       })();
+
       const data: StoreSchema = {
         tier: "guardian",
         status: "live",

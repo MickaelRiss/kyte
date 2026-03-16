@@ -1,4 +1,3 @@
-import { ElectronAPI } from "@electron-toolkit/preload";
 import type { StoreState } from "../types/store";
 
 export type EncryptResult = Array<{ data: string; qr: string }>;
@@ -29,7 +28,6 @@ interface StoreAPI {
 
 declare global {
   interface Window {
-    electron: ElectronAPI;
     kyte: KyteAPI;
     store: StoreAPI;
   }
