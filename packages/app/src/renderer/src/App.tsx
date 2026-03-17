@@ -5,6 +5,7 @@ import { useEncrypt } from "./hooks/useEncrypt";
 import { useDecrypt } from "./hooks/useDecrypt";
 import { useStore } from "./hooks/useStore";
 import { extractIpcError } from "./utils/ipc";
+import { GUARDIAN_ENCRYPTION_QUOTA } from "../../constants";
 
 const ease: Easing = "easeOut";
 const COPIED_FEEDBACK_MS = 1500;
@@ -329,6 +330,11 @@ function App(): React.JSX.Element {
           <span>
             {state?.tier === "guardian" ? "Guardian Plan" : "Free Plan"}
           </span>
+          {state?.tier === "guardian" && (
+            <span className="quota-label">
+              {state.encryption_count} / {GUARDIAN_ENCRYPTION_QUOTA}
+            </span>
+          )}
         </div>
       </div>
 

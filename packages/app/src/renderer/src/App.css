@@ -117,6 +117,16 @@ body {
   background: var(--success);
 }
 
+.quota-label {
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.quota-label::before {
+  content: "·";
+  margin-right: 8px;
+}
+
 /* ── Main Content ── */
 
 .app-content {
