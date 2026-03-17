@@ -459,16 +459,16 @@ function App(): React.JSX.Element {
                         onChange={(e) =>
                           encryptHook.setPassphrase(e.target.value)
                         }
-                        placeholder="Enter your passphrase to use encryption AES-256-GCM"
+                        placeholder="Enter passphrase for AES-256-GCM encryption"
                         type="password"
                       />
                     </div>
                     <div className="field">
-                      <label className="field-label">Seed Phrase</label>
+                      <label className="field-label">Seed phrase</label>
                       <textarea
                         value={encryptHook.seed}
                         onChange={(e) => encryptHook.setSeed(e.target.value)}
-                        placeholder="Enter your BIP39 mnemonic (12-24 words)..."
+                        placeholder="Enter your BIP39 mnemonic (12 to 24 words)"
                         rows={3}
                       />
                     </div>
@@ -478,7 +478,7 @@ function App(): React.JSX.Element {
                         <div className="field">
                           <label className="field-label">
                             Total fragments
-                            <span className="field-hint"> (3–10)</span>
+                            <span className="field-hint"> (3-10)</span>
                           </label>
                           <div className="stepper">
                             <button
@@ -515,7 +515,7 @@ function App(): React.JSX.Element {
                             Minimum to recover
                             <span className="field-hint">
                               {" "}
-                              (2–{encryptHook.totalFragments})
+                              (2-{encryptHook.totalFragments})
                             </span>
                           </label>
                           <div className="stepper">
@@ -819,7 +819,7 @@ function App(): React.JSX.Element {
                       <label className="field-label">
                         Passphrase{" "}
                         <span className="field-hint">
-                          (leave empty if no passphrase was used)
+                          (leave empty if none was used)
                         </span>
                       </label>
                       <input
