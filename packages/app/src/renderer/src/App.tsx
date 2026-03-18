@@ -119,8 +119,14 @@ function DownloadIcon(): React.JSX.Element {
 
 function KeyIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="7.5" cy="15.5" r="3.5" />
       <path d="M10.5 12.5L20 3" />
       <path d="M18 5l2 2" />
@@ -223,9 +229,16 @@ function LicenceModal({
           </>
         ) : (
           <motion.div className="modal-success" {...fadeIn}>
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
-              stroke="var(--success)" strokeWidth="2"
-              strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              width="28"
+              height="28"
+              fill="none"
+              stroke="var(--success)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>Guardian activated!</span>
@@ -331,9 +344,22 @@ function App(): React.JSX.Element {
             {state?.tier === "guardian" ? "Guardian Plan" : "Free Plan"}
           </span>
           {state?.tier === "guardian" && (
-            <span className="quota-label">
-              {state.encryption_count} / {GUARDIAN_ENCRYPTION_QUOTA}
-            </span>
+            <>
+              <span className="quota-label">
+                {state.encryption_count} / {GUARDIAN_ENCRYPTION_QUOTA}
+              </span>
+              <span className="titlebar-dot">·</span>
+              <button
+                className="manage-sub-link"
+                onClick={() =>
+                  window.store.openExternal(
+                    "https://billing.stripe.com/p/login/test_00w5kDc158PWa1edO92cg00",
+                  )
+                }
+              >
+                Manage Subscription
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -403,25 +429,25 @@ function App(): React.JSX.Element {
                 {state?.tier === "free" && (
                   <motion.div className="guardian-banner" variants={fadeIn}>
                     <div className="guardian-banner-hook">
-                      Need more encryptions? More fragments? A panic button?
+                      Take control of your seed security.
                     </div>
                     <div className="guardian-banner-body">
-                      With Guardian, one password reveals your seed. The other
-                      shows a decoy and silently alerts your emergency contacts.
+                      With Guardian Plan, encrypt it with a passphrase, split it
+                      into secure fragments (up to 10) and get instantly
+                      notified on Telegram if a recovery happens.
                     </div>
                     <div className="guardian-banner-actions">
                       <button
                         className="guardian-cta-secondary"
                         onClick={() => setShowLicenceModal(true)}
                       >
-                        <KeyIcon />
-                        I have a key
+                        <KeyIcon />I have a key
                       </button>
                       <button
                         className="guardian-cta-primary"
                         onClick={() =>
                           window.store.openExternal(
-                            "https://kyte-beryl.vercel.app/",
+                            "https://kytesec.com/#plans",
                           )
                         }
                       >

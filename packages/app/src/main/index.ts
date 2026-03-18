@@ -3,10 +3,15 @@ import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 import { SeedManager, SeedValidator, generateQR } from "kyte-core";
 import { StoreService, type GuardianAlertConfig } from "./store";
+import { validateLicenceKey } from "./licence.js";
 import { MAX_FRAGMENTS, MAX_FRAGMENT_LENGTH } from "../constants.js";
 
-const ALLOWED_EXTERNAL_URL = "https://kyte-beryl.vercel.app/";
-const LICENCE_VERIFY_URL = "https://kyte-beryl.vercel.app/api/verify-licence";
+const ALLOWED_EXTERNAL_URLS = new Set([
+  "https://kytesec.com/#plans",
+  "https://billing.stripe.com/p/login/test_00w5kDc158PWa1edO92cg00",
+]);
+const LICENCE_VERIFY_URL = "https://kytesec.com/api/verify-licence";
+const LICENCE_ACTIVATE_URL = "https://kytesec.com/api/activate-licence";
 const TELEGRAM_TOKEN_RE = /^\d{5,16}:[A-Za-z0-9_-]{35}$/;
 const TELEGRAM_CHAT_ID_RE = /^-?\d{1,20}$/;
 
@@ -191,18 +196,23 @@ app.whenReady().then(() => {
         const licenceKey = storeService.getDecryptedLicenceKey();
         if (!licenceKey) return;
 
+        const deviceId = storeService.getOrCreateDeviceId();
         const response = await fetch(LICENCE_VERIFY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ licence_key: licenceKey }),
+          body: JSON.stringify({ licence_key: licenceKey, device_id: deviceId }),
           signal: AbortSignal.timeout(10000),
         });
 
         if (!response.ok) {
-          // Server says subscription is no longer active
-          if (response.status === 403) {
+          // Server says subscription is no longer active or device mismatch
+          if (response.status === 403 || response.status === 409) {
             storeService.revokeGuardian();
-            console.log("Licence expired server-side — downgraded to free");
+            console.log(
+              response.status === 409
+                ? "Licence bound to another device — downgraded to free"
+                : "Licence expired server-side — downgraded to free",
+            );
             // Notify all open windows so the renderer refreshes tier state
             BrowserWindow.getAllWindows().forEach((w) =>
               w.webContents.send("store:state-changed"),
@@ -341,23 +351,64 @@ app.whenReady().then(() => {
     return storeService.getState();
   });
 
-  ipcMain.handle("store:activate-guardian", (_event, licenceKey: unknown) => {
-    if (
-      typeof licenceKey !== "string" ||
-      licenceKey.length === 0 ||
-      licenceKey.length > 512
-    ) {
-      throw new Error("Invalid licence key.");
-    }
-    return storeService.activateGuardian(licenceKey);
-  });
+  ipcMain.handle(
+    "store:activate-guardian",
+    async (_event, licenceKey: unknown) => {
+      if (
+        typeof licenceKey !== "string" ||
+        licenceKey.length === 0 ||
+        licenceKey.length > 512
+      ) {
+        throw new Error("Invalid licence key.");
+      }
+
+      // Offline validation first (no regression)
+      validateLicenceKey(licenceKey);
+
+      // In dev mode, skip server call
+      if (is.dev) {
+        return storeService.activateGuardian(licenceKey);
+      }
+
+      // Register (licence_key, device_id) with the server
+      const deviceId = storeService.getOrCreateDeviceId();
+      let response: Response;
+      try {
+        response = await fetch(LICENCE_ACTIVATE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            licence_key: licenceKey,
+            device_id: deviceId,
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+      } catch {
+        throw new Error("Network connection required to activate.");
+      }
+
+      if (response.status === 409) {
+        throw new Error(
+          "This licence key is already activated on another device.",
+        );
+      }
+      if (response.status === 403) {
+        throw new Error("This licence key is no longer valid.");
+      }
+      if (!response.ok) {
+        throw new Error("Activation failed. Please try again later.");
+      }
+
+      return storeService.activateGuardian(licenceKey);
+    },
+  );
 
   ipcMain.handle("store:revoke-guardian", () => {
     return storeService.revokeGuardian();
   });
 
   ipcMain.handle("app:open-external", (_event, url: unknown) => {
-    if (typeof url !== "string" || url !== ALLOWED_EXTERNAL_URL) return;
+    if (typeof url !== "string" || !ALLOWED_EXTERNAL_URLS.has(url)) return;
     return shell.openExternal(url);
   });
 
