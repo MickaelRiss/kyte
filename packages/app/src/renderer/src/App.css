@@ -11,10 +11,10 @@
 
   --text-primary: #f0f0f2;
   --text-secondary: #9e9ea8;
-  --text-muted: #5c5c66;
+  --text-muted: #838389;
 
   --accent: #c9a84c;
-  --accent-dim: rgba(201, 168, 76, 0.10);
+  --accent-dim: rgba(201, 168, 76, 0.1);
   --accent-hover: #d4b65e;
 
   --error: #e05252;
@@ -133,6 +133,30 @@ body {
   margin-right: 6px;
 }
 
+.titlebar-dot {
+  color: var(--text-muted);
+  margin: 0 2px;
+}
+
+.manage-sub-link {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  -webkit-app-region: no-drag;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.manage-sub-link:hover {
+  color: var(--accent);
+}
+
 /* ── Main Content ──────────────────────────────── */
 
 .app-content {
@@ -206,7 +230,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
   text-align: left;
 }
 
@@ -311,7 +337,9 @@ body {
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .guardian-cta-secondary:hover {
@@ -351,7 +379,9 @@ body {
   background: transparent;
   cursor: pointer;
   color: var(--text-secondary);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   flex-shrink: 0;
 }
 
@@ -577,7 +607,9 @@ body {
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .copy-button:hover {
@@ -717,7 +749,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .remove-fragment-button:hover {
@@ -737,7 +771,9 @@ body {
   cursor: pointer;
   width: 100%;
   text-align: center;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .add-fragment-button:hover {
@@ -810,7 +846,9 @@ body {
   height: 16px;
   background: var(--text-muted);
   border-radius: 50%;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .toggle-switch input:checked + .toggle-track {
@@ -843,7 +881,9 @@ body {
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .test-alert-button:hover:not(:disabled) {
@@ -931,7 +971,9 @@ body {
   color: var(--text-secondary);
   font-size: 18px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1054,7 +1096,9 @@ body {
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .modal-close:hover:not(:disabled) {
@@ -1090,7 +1134,9 @@ body {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .modal-cancel:hover:not(:disabled) {

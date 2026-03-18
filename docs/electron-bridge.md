@@ -113,7 +113,7 @@ interface StoreState {
 | `store:get-state` | `window.store.getState()` | — | `StoreState` |
 | `store:activate-guardian` | `window.store.activateGuardian()` | Key is string, len 1–512 | `StoreState` |
 | `store:revoke-guardian` | `window.store.revokeGuardian()` | — | `StoreState` |
-| `app:open-external` | `window.store.openExternal()` | Exact match against `https://kyte-beryl.vercel.app/` | `void` |
+| `app:open-external` | `window.store.openExternal()` | Exact match against `https://kytesec.com/#plans` | `void` |
 
 All handlers throw typed `Error` objects on validation failure; the message is forwarded to the renderer where React hooks strip the Electron IPC error prefix (see `src/renderer/src/utils/ipc.ts`).
 

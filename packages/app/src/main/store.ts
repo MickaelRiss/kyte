@@ -1,5 +1,6 @@
 import { app, safeStorage } from "electron";
 import { is } from "@electron-toolkit/utils";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { StoreState } from "../types/store.js";
@@ -23,7 +24,11 @@ export interface StoreSchema {
   encryption_count: number;
   licence_key_encrypted: string | null; // base64(safeStorage.encryptString(key))
   guardian_alert: { bot_token: string; chat_id: string } | null;
+  device_id: string | null;
 }
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const FREE_DEFAULTS: StoreSchema = {
   tier: "free",
@@ -31,18 +36,20 @@ const FREE_DEFAULTS: StoreSchema = {
   encryption_count: FREE_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
   guardian_alert: null,
+  device_id: null,
 };
 
-// In dev mode, start as a Free user with one encryption credit to exercise the quota flow
 const DEV_DEFAULTS: StoreSchema = {
-  tier: "free",
+  tier: "guardian",
   status: "live",
-  encryption_count: FREE_ENCRYPTION_QUOTA,
+  encryption_count: GUARDIAN_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
   guardian_alert: null,
+  device_id: null,
 };
 
 const INITIAL_DEFAULTS = is.dev ? DEV_DEFAULTS : FREE_DEFAULTS;
+// const INITIAL_DEFAULTS = FREE_DEFAULTS;
 
 export class StoreService {
   private storePath: string;
@@ -54,8 +61,12 @@ export class StoreService {
     try {
       this.read();
     } catch (error) {
-      console.error("Store missing or corrupted, resetting to defaults", error);
-      this.write(INITIAL_DEFAULTS);
+      if (!fs.existsSync(this.storePath)) {
+        this.write(INITIAL_DEFAULTS);
+      } else {
+        console.error("Store file corrupted or tampered with, refusing to overwrite", error);
+        throw new Error("Kyte store is corrupted. Please reinstall the application.");
+      }
     }
   }
 
@@ -69,7 +80,9 @@ export class StoreService {
 
     // Decrypt and validate the stored licence key
     try {
-      validateLicenceKey(this.decryptLicenceKeyString(data.licence_key_encrypted));
+      validateLicenceKey(
+        this.decryptLicenceKeyString(data.licence_key_encrypted),
+      );
       return this.toState(data);
     } catch {
       // Licence is invalid or expired — downgrade to free
@@ -165,6 +178,19 @@ export class StoreService {
       parsed.guardian_alert = null;
     }
 
+    // Migrate legacy stores that lack device_id
+    if (parsed.device_id === undefined) {
+      parsed.device_id = null;
+    }
+
+    // Validate device_id format if present
+    if (
+      parsed.device_id !== null &&
+      (typeof parsed.device_id !== "string" || !UUID_RE.test(parsed.device_id))
+    ) {
+      parsed.device_id = null;
+    }
+
     return parsed as StoreSchema;
   }
 
@@ -214,6 +240,7 @@ export class StoreService {
           .encryptString(licenceKey)
           .toString("base64"),
         guardian_alert: existing?.guardian_alert ?? null,
+        device_id: existing?.device_id ?? null,
       };
 
       this.write(data);
@@ -237,6 +264,14 @@ export class StoreService {
       ? { bot_token: config.botToken, chat_id: config.chatId }
       : null;
     this.write(data);
+  }
+
+  getOrCreateDeviceId(): string {
+    const data = this.read();
+    if (data.device_id) return data.device_id;
+    data.device_id = crypto.randomUUID();
+    this.write(data);
+    return data.device_id;
   }
 
   getGuardianAlert(): GuardianAlertConfig | null {
