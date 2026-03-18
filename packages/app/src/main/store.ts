@@ -40,9 +40,9 @@ const FREE_DEFAULTS: StoreSchema = {
 };
 
 const DEV_DEFAULTS: StoreSchema = {
-  tier: "guardian",
+  tier: "free",
   status: "live",
-  encryption_count: GUARDIAN_ENCRYPTION_QUOTA,
+  encryption_count: FREE_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
   guardian_alert: null,
   device_id: null,

@@ -11,7 +11,6 @@ const ALLOWED_EXTERNAL_URLS = new Set([
   "https://billing.stripe.com/p/login/test_00w5kDc158PWa1edO92cg00",
 ]);
 const LICENCE_VERIFY_URL = "https://kytesec.com/api/verify-licence";
-const LICENCE_ACTIVATE_URL = "https://kytesec.com/api/activate-licence";
 const TELEGRAM_TOKEN_RE = /^\d{5,16}:[A-Za-z0-9_-]{35}$/;
 const TELEGRAM_CHAT_ID_RE = /^-?\d{1,20}$/;
 
@@ -374,7 +373,7 @@ app.whenReady().then(() => {
       const deviceId = storeService.getOrCreateDeviceId();
       let response: Response;
       try {
-        response = await fetch(LICENCE_ACTIVATE_URL, {
+        response = await fetch(LICENCE_VERIFY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
