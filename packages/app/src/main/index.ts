@@ -364,11 +364,6 @@ app.whenReady().then(() => {
       // Offline validation first (no regression)
       validateLicenceKey(licenceKey);
 
-      // In dev mode, skip server call
-      if (is.dev) {
-        return storeService.activateGuardian(licenceKey);
-      }
-
       // Register (licence_key, device_id) with the server
       const deviceId = storeService.getOrCreateDeviceId();
       let response: Response;
