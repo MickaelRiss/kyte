@@ -9,6 +9,7 @@ import { MAX_FRAGMENTS, MAX_FRAGMENT_LENGTH } from "../constants.js";
 const ALLOWED_EXTERNAL_URLS = new Set([
   "https://kytesec.com/#plans",
   "https://billing.stripe.com/p/login/test_00w5kDc158PWa1edO92cg00",
+  "https://kyte.gitbook.io/kyte-doc#telegram-recovery-alerts",
 ]);
 const LICENCE_VERIFY_URL = "https://kytesec.com/api/verify-licence";
 const TELEGRAM_TOKEN_RE = /^\d{5,16}:[A-Za-z0-9_-]{35}$/;
@@ -160,6 +161,19 @@ function sendTelegramAlert(
   );
 }
 
+function sendFailedTelegramAlert(
+  alert: GuardianAlertConfig,
+  location: LocationInfo,
+  reason: string,
+): void {
+  const locationStr = formatLocation(location);
+  const timestamp = new Date().toUTCString();
+  const message = `🚨 A seed recovery attempt FAILED.\n📍 ${locationStr}\n🕐 ${timestamp}\n\n❌ Reason: ${reason}\n\n⚠️ This location is approximate and may reflect the ISP's routing center, not the exact device position.\n\nIf this wasn't you, someone may be attempting to access your seed. Take immediate action.`;
+  sendTelegramMessage(alert.botToken, alert.chatId, message).catch((err) =>
+    console.error("Telegram failure alert failed:", err),
+  );
+}
+
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -308,14 +322,34 @@ app.whenReady().then(() => {
       ) {
         throw new Error("Invalid passphrase.");
       }
-      const seed = await SeedManager.recoverSeed(
-        fragments,
-        passphrase as string | undefined,
-      );
 
       const state = storeService.getState();
       const alertConfig = storeService.getGuardianAlert();
-      if (alertConfig && state.tier === "guardian" && state.status === "live") {
+      const isGuardianWithAlert =
+        alertConfig && state.tier === "guardian" && state.status === "live";
+
+      let seed: string;
+      try {
+        seed = await SeedManager.recoverSeed(
+          fragments,
+          passphrase as string | undefined,
+        );
+      } catch (err) {
+        if (isGuardianWithAlert) {
+          const reason =
+            err instanceof Error ? err.message : "Unknown error";
+          fetchGeoLocation()
+            .then((loc) =>
+              sendFailedTelegramAlert(alertConfig, loc, reason),
+            )
+            .catch(() =>
+              console.error("Guardian failure alert failed (network error)"),
+            );
+        }
+        throw err;
+      }
+
+      if (isGuardianWithAlert) {
         fetchGeoLocation()
           .then((loc) => sendTelegramAlert(alertConfig, loc))
           .catch(() => console.error("Guardian alert failed (network error)"));

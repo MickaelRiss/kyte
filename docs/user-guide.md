@@ -83,7 +83,7 @@ If a passphrase is provided, the seed is encrypted using AES-256-GCM with a PBKD
 
 #### Telegram Alert
 
-You can also enable Telegram Recovery Alerts during encryption. To prevent any unauthorized modification or false alarms by third parties, your bot configuration is stored exclusively on the local machine used for encryption. In the event of a recovery, an immediate alert is sent to your trusted contacts, including the decryption IP address, allowing them to follow your instructions and alert the authorities if necessary. [See Telegram Recovery Alerts for setup instructions](#telegram-recovery-alerts).
+You can also enable Telegram Recovery Alerts during encryption. To prevent any unauthorized modification or false alarms by third parties, your bot configuration is stored exclusively on the local machine used for encryption. In the event of a recovery or a failed attempt, an immediate alert is sent to your trusted contacts, including the decryption IP address, allowing them to follow your instructions and alert the authorities if necessary. [See Telegram Recovery Alerts for setup instructions](#telegram-recovery-alerts).
 {% endstep %}
 
 {% step %}
@@ -284,9 +284,9 @@ For a description of the Bot API, see this page: https://core.telegram.org/bots/
 - Optionally click **"Test Alert"** to verify your configuration before encrypting. The app shows sending / success / error states.
 - Click Encrypt. Your alert config is stored encrypted on your device.
 
-**What the Alert Contains**
+**What the Alerts Contain**
 
-When your seed is recovered, you receive a Telegram message with:
+**On successful recovery**, you receive a Telegram message with:
 
 - Approximate city, region, and country (based on IP address)
 - ISP / network provider name
@@ -294,10 +294,16 @@ When your seed is recovered, you receive a Telegram message with:
 - UTC timestamp of the recovery event
 - A disclaimer that the location is IP-based, not GPS
 
+**On failed recovery attempt**, you receive an urgent Telegram message with:
+
+- All the same location and timestamp information
+- The reason for the failure (e.g. wrong passphrase, mismatched fragments)
+- A warning to take immediate action if the attempt wasn't yours
+
 **Important Notes**
 
 {% hint style="info" %}
-**The alert is asynchronous.** Your recovered seed appears in the app immediately. The Telegram message fires in the background after the seed is returned. There is no delay on the recovery side.
+**Alerts are asynchronous.** The Telegram message fires in the background. On successful recovery, your seed appears in the app immediately with no delay. On failed recovery, the error is still shown to the person attempting decryption.
 
 **Location is approximate.** The geolocation is IP-based and may reflect your ISP's routing center rather than your exact physical location. It is useful as an indicator, not a precise tracker.
 {% endhint %}

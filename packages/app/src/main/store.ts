@@ -40,9 +40,9 @@ const FREE_DEFAULTS: StoreSchema = {
 };
 
 const DEV_DEFAULTS: StoreSchema = {
-  tier: "free",
+  tier: "guardian",
   status: "live",
-  encryption_count: FREE_ENCRYPTION_QUOTA,
+  encryption_count: GUARDIAN_ENCRYPTION_QUOTA,
   licence_key_encrypted: null,
   guardian_alert: null,
   device_id: null,
@@ -64,8 +64,13 @@ export class StoreService {
       if (!fs.existsSync(this.storePath)) {
         this.write(INITIAL_DEFAULTS);
       } else {
-        console.error("Store file corrupted or tampered with, refusing to overwrite", error);
-        throw new Error("Kyte store is corrupted. Please reinstall the application.");
+        console.error(
+          "Store file corrupted or tampered with, refusing to overwrite",
+          error,
+        );
+        throw new Error(
+          "Kyte store is corrupted. Please reinstall the application.",
+        );
       }
     }
   }

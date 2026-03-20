@@ -597,19 +597,24 @@ function App(): React.JSX.Element {
                           <span className="toggle-track" />
                         </span>
                         <span>Enable Telegram notification on recovery</span>
+                        <a
+                          href="#"
+                          className="setup-link"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.store.openExternal(
+                              "https://kyte.gitbook.io/kyte-doc#telegram-recovery-alerts",
+                            );
+                          }}
+                        >
+                          How to set up
+                        </a>
                       </label>
                       {encryptHook.guardianAlertEnabled && (
                         <>
                           <div className="field">
                             <label className="field-label">
                               Bot Token
-                              <span
-                                className="field-hint"
-                                title="The bot token only grants send-only access to one chat. It will be embedded in your fragments."
-                              >
-                                {" "}
-                                ⓘ
-                              </span>
                             </label>
                             <input
                               type="password"

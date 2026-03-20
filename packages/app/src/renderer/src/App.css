@@ -809,6 +809,18 @@ body {
   user-select: none;
 }
 
+.setup-link {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.setup-link:hover {
+  text-decoration: underline;
+}
+
 .toggle-label.toggle-disabled {
   opacity: 0.35;
   cursor: not-allowed;
