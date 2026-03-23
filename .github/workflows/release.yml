@@ -17,15 +17,12 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            release_path: packages/app/release/kyte-windows-*.exe
           - os: macos-latest
-            release_path: packages/app/release/kyte-mac-*.dmg
           - os: ubuntu-latest
-            release_path: packages/app/release/kyte-ubuntu-*.AppImage
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -46,15 +43,10 @@ jobs:
           npm version $VERSION --no-git-tag-version --prefix packages/app
           npm version $VERSION --no-git-tag-version
 
-      - name: Build App
+      - name: Build and Publish App
         run: pnpm package
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ matrix.release_path }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify-website:
     needs: build-and-release
