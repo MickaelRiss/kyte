@@ -25,9 +25,15 @@
     "files": [
       "out/**/*"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "MickaelRiss",
+      "repo": "kyte"
+    },
     "mac": {
       "target": [
-        "dmg"
+        "dmg",
+        "zip"
       ],
       "artifactName": "kyte-mac-${version}.${ext}",
       "category": "public.app-category.utilities"
@@ -49,6 +55,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-sans": "^5.2.8",
+    "electron-updater": "^6.8.3",
     "kyte-core": "workspace:*",
     "motion": "^12.29.2"
   },

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
+import { autoUpdater } from "electron-updater";
 import { SeedManager, SeedValidator, generateQR } from "kyte-core";
 import { StoreService, type GuardianAlertConfig } from "./store";
 import { validateLicenceKey } from "./licence.js";
@@ -444,6 +445,35 @@ app.whenReady().then(() => {
     Menu.setApplicationMenu(null);
   }
   createWindow();
+
+  // Auto-update (production only)
+  if (!is.dev) {
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+
+    autoUpdater.on("checking-for-update", () => {
+      console.log("[updater] Checking for update…");
+    });
+    autoUpdater.on("update-available", (info) => {
+      console.log(`[updater] Update available: v${info.version}`);
+    });
+    autoUpdater.on("update-not-available", () => {
+      console.log("[updater] App is up to date.");
+    });
+    autoUpdater.on("download-progress", (progress) => {
+      console.log(`[updater] Download: ${Math.round(progress.percent)}%`);
+    });
+    autoUpdater.on("update-downloaded", (info) => {
+      console.log(
+        `[updater] Update v${info.version} downloaded — will install on quit.`,
+      );
+    });
+    autoUpdater.on("error", (err) => {
+      console.error("[updater] Error:", err.message);
+    });
+
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
