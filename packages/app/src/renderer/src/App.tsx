@@ -353,7 +353,7 @@ function App(): React.JSX.Element {
                 className="manage-sub-link"
                 onClick={() =>
                   window.store.openExternal(
-                    "https://billing.stripe.com/p/login/test_00w5kDc158PWa1edO92cg00",
+                    "https://billing.stripe.com/p/login/00w5kDc158PWa1edO92cg00",
                   )
                 }
               >
@@ -613,9 +613,7 @@ function App(): React.JSX.Element {
                       {encryptHook.guardianAlertEnabled && (
                         <>
                           <div className="field">
-                            <label className="field-label">
-                              Bot Token
-                            </label>
+                            <label className="field-label">Bot Token</label>
                             <input
                               type="password"
                               value={encryptHook.botToken}

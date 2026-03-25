@@ -9,7 +9,7 @@ import { MAX_FRAGMENTS, MAX_FRAGMENT_LENGTH } from "../constants.js";
 
 const ALLOWED_EXTERNAL_URLS = new Set([
   "https://kytesec.com/#plans",
-  "https://billing.stripe.com/p/login/test_00w5kDc158PWa1edO92cg00",
+  "https://billing.stripe.com/p/login/00w5kDc158PWa1edO92cg00",
   "https://kyte.gitbook.io/kyte-doc#telegram-recovery-alerts",
 ]);
 const LICENCE_VERIFY_URL = "https://kytesec.com/api/verify-licence";
@@ -214,7 +214,10 @@ app.whenReady().then(() => {
         const response = await fetch(LICENCE_VERIFY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ licence_key: licenceKey, device_id: deviceId }),
+          body: JSON.stringify({
+            licence_key: licenceKey,
+            device_id: deviceId,
+          }),
           signal: AbortSignal.timeout(10000),
         });
 
@@ -337,12 +340,9 @@ app.whenReady().then(() => {
         );
       } catch (err) {
         if (isGuardianWithAlert) {
-          const reason =
-            err instanceof Error ? err.message : "Unknown error";
+          const reason = err instanceof Error ? err.message : "Unknown error";
           fetchGeoLocation()
-            .then((loc) =>
-              sendFailedTelegramAlert(alertConfig, loc, reason),
-            )
+            .then((loc) => sendFailedTelegramAlert(alertConfig, loc, reason))
             .catch(() =>
               console.error("Guardian failure alert failed (network error)"),
             );
